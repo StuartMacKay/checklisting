@@ -1,0 +1,4 @@
+Version 0.1a1
+-------------
+
+  * Initial version with working spider downloading checklists from eBird.

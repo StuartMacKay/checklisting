@@ -1,0 +1,17 @@
+*~
+*.pyc
+*.pyo
+*.log
+*.mo
+*.sqlite
+
+.*
+!/.gitignore
+
+checklisting.egg-info/
+cover/
+dist/
+tmp/
+
+.ropeproject
+eproject.cfg

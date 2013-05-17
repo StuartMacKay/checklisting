@@ -1,0 +1,586 @@
+"""A crawler downloading checklists from eBird.
+
+This crawler creates checklists for recent observations for a given region
+using the eBird API. Additional information for each checklist is also
+scraped from the checklist web page.
+"""
+
+import copy
+import json
+import os
+import re
+
+from scrapy import log
+from scrapy.http import Request
+from scrapy.selector import HtmlXPathSelector
+from scrapy.spider import BaseSpider
+
+from checklisting.spiders.utils import remove_whitespace, select_keys, dedup, \
+    save_json_data
+
+
+class JSONParser(object):
+
+    """Extract checklists from JSON data returned from the eBird API."""
+
+    location_keys = [
+        'locID',
+        'locName',
+        'subnational1Name',
+        'subnational2Name',
+        'countryName',
+        'lat',
+        'lng',
+    ]
+
+    checklist_keys = [
+        'firstName',
+        'lastName',
+        'obsDt',
+        'subID',
+    ] + location_keys
+
+    def __init__(self, response):
+        """Initialize the parser with a JSON encoded response.
+
+        Args:
+            response (str): an encoded string containing the JSON data returned
+                by a call to the eBird API.
+
+        Returns:
+            JSONParser: a JSONParser object with the records decided from
+            the JSON data.
+        """
+        self.records = json.loads(response.body_as_unicode())
+
+    def get_checklists(self):
+        """Get the set of checklists from the observations."""
+        filtered = dedup(select_keys(self.records, self.checklist_keys))
+        checklists = [self.get_checklist(record) for record in filtered]
+        for checklist in checklists:
+            checklist['entries'] = [self.get_entry(r) for r in self.records
+                                    if r['subID'] == checklist['identifier']]
+        return checklists
+
+    def get_checklist(self, record):
+        """Get the fields for a checklist from an observation.
+
+        Args:
+            record (dict): the observation record.
+
+        Returns:
+            dict: a dictionary containing the checklist fields.
+        """
+        first_name = record['firstName'].strip()
+        last_name = record['lastName'].strip()
+
+        if ' ' in record['obsDt']:
+            time = record['obsDt'].strip().split(' ')[1]
+        else:
+            time = '12:00:00'
+
+        return {
+            'identifier': record['subID'].strip(),
+            'location': self.get_location(record),
+            'date': record['obsDt'].strip().split(' ')[0],
+            'time': time,
+            'submitted_by': first_name + ' ' + last_name,
+            'observers': [first_name + ' ' + last_name],
+            'source': 'eBird',
+        }
+
+    def get_locations(self):
+        """Get the set of locations from the observations.
+
+        Returns:
+            list(dict): a list of dicts containing the fields for a location.
+        """
+        filtered = dedup(select_keys(self.records, self.location_keys))
+        return [self.get_location(record) for record in filtered]
+
+    def get_location(self, record):
+        """Get the fields for a location from an observation.
+
+        Returns:
+            dict: a dictionary containing the fields for a location.
+
+        If a given field is not present in the record then the value defaults
+        to an empty string. This allows the method to process records that
+        contain either the simple results fields or the full results fields.
+        """
+        return {
+            'identifier': record['locID'],
+            'name': record['locName'],
+            'county': record.get('subnational2Name', ''),
+            'region': record.get('subnational1Name', ''),
+            'country': record.get('countryName', ''),
+            'lat': record['lat'],
+            'lon': record['lng'],
+        }
+
+    def get_entry(self, record):
+        """Get the fields for an entry from an observation.
+
+        Returns:
+            dict: a dictionary containing the fields for a checklist entry.
+        """
+        return {
+            'identifier': record['obsID'],
+            'species': self.get_species(record),
+            'count': record.get('howMany', '0'),
+        }
+
+    def get_species(self, record):
+        """Get the species fields for an entry from an observation.
+
+        Args:
+            record (dict); the observation record,
+
+        Returns:
+            dict: a dictionary containing the fields for a species.
+        """
+        return {
+            'standard_name': record['comName'],
+            'common_name_en': record['comName'],
+            'scientific_name': record['sciName'],
+        }
+
+
+class HTMLParser(object):
+
+    """Extract information from the checklist web page.
+
+    Only the information not available through the API is extracted, with the
+    exception of the counts for each species- which has the associated details
+    dictionary which contains a breakdown of the count based on age and sex.
+    """
+
+    protocol_codes = {
+        'Traveling': 'TRV',
+        'Stationary': 'STA',
+        'Incidental': 'INC',
+        'Area': 'ARE',
+        'Random': 'RND',
+        'Nocturnal Flight Call Count': 'NFC',
+        'None': 'NON'
+    }
+
+    def __init__(self, response):
+        """Initialize the parser with an HTML encoded response.
+
+        Args:
+            response (str): the contents of the checklist web page.
+
+        Returns:
+            HTMLParser: an HTMLParser object containing the contents of the
+                checklist web page and a dict containing the main checklist
+                attributes.
+        """
+        self.docroot = HtmlXPathSelector(response)
+        self.attributes = self.get_attributes(self.docroot)
+
+    def get_attributes(self, node):
+        """Get the checklist attributes.
+
+        Args:
+            node (HtmlXPathSelector): an XML node,
+
+        Returns:
+            dict: a dictionary containing the fields and values of a checklist.
+        """
+        keys = node.select('//dl/dt/text()').extract()
+        keys = remove_whitespace(keys)
+        values = node.select('//dl/dd/text()').extract()
+        values = remove_whitespace(values)
+        return dict(zip(keys, values))
+
+    def get_checklist(self):
+        """Get the checklist fields extracted ffrom the HTML response.
+
+        Returns:
+            dict: a checklist containing the fields extract from the HTML.
+
+        Only the fields not available through the API are extracted from the
+        HTML. The parser can be sub-classed to extract any more information.
+        """
+        return {
+            'observer_count': self.get_observer_count(),
+            'observers': self.get_observers(),
+            'protocol': self.get_protocol(),
+            'entries': self.get_entries(),
+        }
+
+    def get_protocol(self):
+        """Get the protocol used for the checklist.
+
+        Returns:
+            dict: a dictionary containing the fields describing the protocol
+                used to count the birds recorded in the checklist.
+        """
+        protocol_key = self.attributes.get('Protocol:', None)
+        protocol_code = self.protocol_codes.get(protocol_key, 'NON')
+
+        duration_str = self.attributes.get('Duration:', '')
+        if 'hour' in duration_str:
+            duration_hours = int(re.search(
+                r'(\d+) h', duration_str).group(1))
+        else:
+            duration_hours = 0
+        if 'min' in duration_str:
+            duration_minutes = int(re.search(
+                r'(\d+) m', duration_str).group(1))
+        else:
+            duration_minutes = 0
+
+        distance_str = self.attributes.get('Distance:', '0 kilometer(s)')
+        if 'kilometer' in distance_str:
+            distance = int(float(re.search(
+                r'([\.\d]+) k', distance_str).group(1)) * 1000)
+        else:
+            distance = int(float(re.search(
+                r'([\.\d]+) m', distance_str).group(1)) * 1609)
+
+        return {
+            'type': protocol_code,
+            'duration_hours': duration_hours,
+            'duration_minutes': duration_minutes,
+            'distance': distance,
+            'area': 0,
+        }
+
+    def get_observers(self):
+        """Get the additional observers.
+
+        Returns:
+            list(str): the observers, excluding the person who submitted the
+                checklist.
+        """
+        return remove_whitespace(
+            self.attributes.get('Observers:', '').split(','))
+
+    def get_observer_count(self):
+        """Get the number of observers present.
+
+        Returns:
+           int: the number of observers for the checklist. Defaults to zero
+               if the data is missing from the HTML or there is an error
+               converting it to an int.
+        """
+        try:
+            count = int(self.attributes.get('Party Size:', '0'))
+        except ValueError:
+            count = 0
+        return count
+
+    def get_entries(self):
+        """Get the checklist entries with any additional details for the count.
+
+        Returns:
+            list(dict): a list of dicts contains the fields for a checklist
+                entry. In turn each contains a list of dicts containing the
+                fields describing the breakdown of the entry count by age and
+                sex.
+        """
+        entries = []
+        for selector in self.docroot.select('//tr[@class="spp-entry"]'):
+            standard_name = selector.select(
+                './/h5[@class="se-name"]/text()').extract()[0].strip()
+            count = selector.select(
+                './/h5[@class="se-count"]/text()').extract()[0].strip()
+
+            if '(' in standard_name:
+                species = {
+                    'standard_name': standard_name.split('(')[0].strip(),
+                }
+                subspecies = {
+                    'standard_name': standard_name,
+                }
+            else:
+                species = {
+                    'standard_name': standard_name,
+                }
+                subspecies = {}
+
+            try:
+                int(count)
+            except ValueError:
+                count = '0'
+
+            entries.append({
+                'species': species,
+                'subspecies': subspecies,
+                'count': count,
+                'details': self.get_entry_details(selector),
+                'comment_en': self.get_entry_comment(selector),
+            })
+        return entries
+
+    def get_entry_comment(self, node):
+        """Get any comment for a checklist entry.
+
+        Args:
+            node (HtmlXPathSelector): the node in the tree from where to
+                extract the comment.
+
+        Returns:
+            str: any comment associated with a checklist entry.
+        """
+        comment = ''
+        selection = node.select('.//p[@class="obs-comments"]/text()')\
+            .extract()
+        if selection:
+            comment = selection[0].strip()
+        return comment
+
+    def get_entry_details(self, node):
+        """Get the details for each count.
+
+        Args:
+            node (HtmlXPathSelector): the node in the tree from where to
+                extract the entry details.
+
+        Returns:
+            list(dict): a list of dicts containing the fields that describe
+                the breakdown of the checklist entry count by age and sex.
+        """
+        details = []
+        for selector in node.select('.//div[@class="sd-data-age-sex"]//tr'):
+            ages = selector.select('./td')
+
+            if not ages:
+                continue
+
+            sex = ages[0].select('./text()').extract()[0][0].upper()
+
+            if sex != 'M' and sex != 'F':
+                sex = 'X'
+
+            for index, age in zip(range(1, 5), ['JUV', 'IMM', 'AD', '']):
+                values = ages[index].select('./text()').extract()
+                if values:
+                    details.append({
+                        'age': age,
+                        'sex': sex,
+                        'count': int(values[0])
+                    })
+        return details
+
+
+class EBirdSpider(BaseSpider):
+    """Extract checklists recently added to eBird.
+
+    The spider starts by using the API to return the observations for the
+    last <n> days for the selected region. The recent observations for a region
+    only contain the simple results fields so additional requests are generated
+    for the recent observations for each location which contain the full result
+    fields. Not all the useful information for a checklist is available through
+    the API so the checklist web page from eBird.org is also parsed to extract
+    information such as the type of protocol used, breakdowns by age and sex of
+    the counts for each species, etc. The completed checklist is then written
+    in JSON format to a file.
+
+    Details on the eBird API and the different sets of fields returned can be
+    found at https://confluence.cornell.edu/display/CLOISAPI/eBird+API+1.1
+
+    """
+
+    name = 'ebird'
+    allowed_domains = ["ebird.org", "secure.birds.cornell.edu"]
+    api_parser = JSONParser
+    html_parser = HTMLParser
+
+    region_url = "http://ebird.org/ws1.1/data/obs/region/recent?" \
+                 "rtype=subnational1&r=%s&back=%d&fmt=json"
+    location_url = "http://ebird.org/ws1.1/data/obs/loc/recent?" \
+                   "r=%s&detail=full&back=%d&includeProvisional=true&fmt=json"
+    checklist_url = "http://ebird.org/ebird/view/checklist?subID=%s"
+
+    def __init__(self, region, duration, directory, **kwargs):
+        """Initialize the spider.
+
+        Args:
+            region (str): the code identifying the eBird region to fetch
+                observations for.
+            duration (str): the previous number of days to fetch observations
+                for - up to 30, the maximum supported by the eBird API.
+            directory (str): the target directory where the downloaded
+                checklists will be written to.
+
+        Returns:
+            EBirdSpider: a Scrapy crawler object.
+        """
+        super(EBirdSpider, self).__init__(**kwargs)
+
+        self.region = region
+        self.duration = int(duration)
+        self.directory = directory
+
+        logfile = kwargs.pop('logfile', 'ebird.log')
+        log.start(logfile=logfile)
+
+    def start_requests(self):
+        """Request the recent observations for the region.
+
+        Returns:
+            Request: yields a single request for the recent observations for
+                an eBird region.
+        """
+        url = self.region_url % (self.region, self.duration)
+        yield Request(url, callback=self.parse_region)
+
+    def parse_region(self, response):
+        """Request the recent observations for each location.
+
+        Args:
+            response (Response): the result of calling the eBird API to get the
+                recent observations for a region.
+
+        Returns:
+            Request: yields a series of requests to the eBird API to get the
+                recent observations for each location extracted from the
+                recent observations for the region.
+        """
+        for location in self.api_parser(response).get_locations():
+            url = self.location_url % (location['identifier'], self.duration)
+            yield Request(url, callback=self.parse_locations)
+
+    def parse_locations(self, response):
+        """Create the checklists from the observations.
+
+        Args:
+            response (Response): the result of calling the eBird API to get the
+                recent observations for a location.
+
+        Returns:
+            Request: yields a series of requests to the eBird website to get
+                web page used to display the details of a checklist.
+
+        Even with the full results fields there is still useful information
+        missing so additional requests are generated for the checklist web
+        page.
+
+        Currently there appears to be an intermittent problem with scrapy
+        matching requests and responses when parsing the web page so the
+        checklist is saved in case the additional data from the web page
+        cannot be added later.
+        """
+        checklists = self.api_parser(response).get_checklists()
+        for checklist in checklists:
+            self.save_checklist(checklist)
+            identifier = checklist['identifier']
+            url = self.checklist_url % identifier
+            yield Request(url, callback=self.parse_checklist, dont_filter=True,
+                          meta={'checklist': checklist})
+
+    def parse_checklist(self, response):
+        """Parse the missing checklist data from the web page.
+
+        Args:
+            response (str): the contents of the checklist web page.
+
+        The checklist first extracted from the call the eBird API is passed
+        through the parse_region() and parse_locations() methods using the
+        metadata attribute on the Request and Response objects. It is then
+        merged with the data has been extracted from the web page and written
+        to a file in the directory specified when the spider was created.
+
+        There appears to be an intermittent problem where the web page being
+        parsed does not match the checklist in the metadata (added in the
+        parse_location() method), It's not clear whether this is a bug in
+        scrapy or a side-effect of the redirects for security checks made by
+        Cornell. If the mismatch does occur then the web page contents are
+        simply discarded as the checklist has already been saved. An attempt
+        was made to store the checklists in a dict on the spider but when the
+        error occurs it appears that more than one response is returned for
+        some web pages, and none for others, so not all the checklists were
+        being updated. Simply discarding the response minimises the chances of
+        the checklist data being corrupted.
+        """
+        if not response.url.endswith(response.meta['checklist']['identifier']):
+            self.log("Web page response is not for the checklist in the "
+                     "metadata, %s != %s" % (
+                         response.url[-9:],
+                         response.meta['checklist']['identifier']
+                     ), log.ERROR)
+            return
+
+        update = self.html_parser(response).get_checklist()
+        original = response.meta['checklist']
+
+        if self.settings['LOG_LEVEL'] == 'DEBUG':
+            self.compare_checklists(original, update)
+
+        checklist = self.merge_checklists(original, update)
+        checklist['url'] = response.url
+        self.save_checklist(checklist)
+
+    def merge_checklists(self, original, update):
+        """Merge two checklists together.
+
+        Args:
+           original (dict): the checklist extracted from the JSON data.
+           update (dict): the checklist extracted from the web page.
+
+        Returns:
+           dict: a deep copy of the JSON checklist updated with values from
+               the checklist obtained from the web page.
+        """
+        result = copy.deepcopy(original)
+
+        result['observers'] = original['observers'] + update['observers']
+        result['observer_count'] = update['observer_count']
+        result['protocol'] = update['protocol']
+
+        entries = {entry['species']['standard_name']: entry
+                   for entry in result['entries']}
+
+        for entry in update['entries']:
+            key = entry['species']['standard_name']
+            if key in entries:
+                entries[key].update(entry)
+            else:
+                entries[key] = entry
+
+        result['entries'] = entries.values()
+
+        return result
+
+    def compare_checklists(self, original, update):
+        """Compare two checklists.
+
+        Args:
+           original (dict): the checklist extracted from the JSON data.
+           update (dict): the checklist extracted from the web page.
+
+        This method is used to identify whether there are any differences
+        between the data available using the eBird API and the web page.
+        """
+
+        original_species = {entry['species']['standard_name']
+                            for entry in original['entries']}
+
+        update_species = {entry['species']['standard_name']
+                          for entry in update['entries']}
+
+        diff = list(original_species.difference(update_species))
+        if diff:
+            self.log("Species missing from the web page checklist: %s" %
+                     ', '.join(diff))
+
+        diff = list(update_species.difference(original_species))
+        if diff:
+            self.log("Species missing from the API checklist: %s" %
+                     ', '.join(diff))
+
+    def save_checklist(self, checklist):
+        """Save the checklist in JSON format.
+
+        Args:
+        checklist (dict); the checklist.
+
+        The filename using the source, in this case 'ebird' and the checklist
+        identifier so that the data is always written to the same file.
+        """
+        path = os.path.join(self.directory, "%s-%s.json" % (
+            checklist['source'], checklist['identifier']))
+        save_json_data(path, checklist)

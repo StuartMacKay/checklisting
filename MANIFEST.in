@@ -1,0 +1,2 @@
+include *.rst *.txt scrapy.cfg
+recursive-include checklisting *.py
