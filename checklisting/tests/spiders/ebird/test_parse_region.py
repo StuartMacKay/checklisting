@@ -11,7 +11,8 @@ class ParseRegionTestCase(TestCase):
 
     def setUp(self):
         """Initialize the test."""
-        self.spider = ebird_spider.EBirdSpider('REG', 10, '.')
+        self.spider = ebird_spider.EBirdSpider('REG')
+        self.spider.start_requests()
 
     def test_request_count(self):
         """Verify one request is generated for each location."""
@@ -43,7 +44,7 @@ class ParseRegionTestCase(TestCase):
             },
         ])
         results = self.spider.parse_region(response)
-        expected = self.spider.location_url % ('L00000001', 10)
+        expected = self.spider.location_url % ('L00000001', 7)
         self.assertTrue(results.next().url, expected)
 
     def test_request_callbacks(self):

@@ -10,7 +10,7 @@ class MergeChecklistsTestCase(TestCase):
 
     def setUp(self):
         """Initialize the test."""
-        self.spider = ebird_spider.EBirdSpider('REG', 10, '.')
+        self.spider = ebird_spider.EBirdSpider('REG')
         self.lista = {
             'identifier': 'S0000001',
             'date': '2013-03-27',
