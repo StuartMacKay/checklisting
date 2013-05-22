@@ -475,19 +475,15 @@ class EBirdSpider(BaseSpider):
         missing so additional requests are generated for the checklist web
         page. Whether the spider continues and processes the checklist web
         page is controlled by the EBIRD_INCLUDE_HTML setting.
-
-        ISSUE: Currently there appears to be an intermittent problem with
-        scrapy matching requests and responses when parsing the web page so the
-        checklist is saved in case the additional data from the web page
-        cannot be added later.
         """
         checklists = self.api_parser(response).get_checklists()
         for checklist in checklists:
-            self.save_checklist(checklist)
             if self.include_html:
                 url = self.checklist_url % checklist['identifier']
                 yield Request(url, callback=self.parse_checklist,
                               dont_filter=True, meta={'checklist': checklist})
+            else:
+                self.save_checklist(checklist)
 
     def parse_checklist(self, response):
         """Parse the missing checklist data from the web page.
@@ -501,21 +497,16 @@ class EBirdSpider(BaseSpider):
         merged with the data has been extracted from the web page and written
         to a file in the directory specified when the spider was created.
 
-        ISSUE: There appears to be an intermittent problem where the web page
-        being parsed does not match the checklist in the metadata (added in
-        the parse_location() method), It's not clear whether this is a bug in
-        scrapy or a side-effect of the redirects for security checks made by
-        Cornell. If the mismatch does occur then the web page contents are
-        simply discarded as the checklist has already been saved. An attempt
-        was made to store the checklists in a dict on the spider but when the
-        error occurs it appears that more than one response is returned for
-        some web pages, and none for others, so not all the checklists were
-        being updated. Simply discarding the response minimises the chances of
-        the checklist data being corrupted.
+        ISSUE: If the setting CONCURRENT_REQUEST != 1 then the checklist data
+        in the response sometimes does not match the checklist in the request
+        metadata. The problem appears to be intermittent, but for a given run
+        of the spider it usually happens after the 4th or 5th response. The
+        cause is not known. If the problem occurs then an error is logged and
+        the checklist is discarded.
         """
         if not response.url.endswith(response.meta['checklist']['identifier']):
-            self.log("Web page response is not for the checklist in the "
-                     "metadata, %s != %s" % (
+            self.log("Checklists in response and request don't match."
+                     "Identifiers: %s != %s" % (
                          response.url[-9:],
                          response.meta['checklist']['identifier']
                      ), log.ERROR)

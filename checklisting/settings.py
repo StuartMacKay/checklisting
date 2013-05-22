@@ -19,9 +19,15 @@ REDIRECT_ENABLED = True
 
 COOKIES_ENABLED = True
 
-# The delay between requests in seconds. Keep this number relatively long
-# in order to avoid overloading the server or getting banned.
-DOWNLOAD_DELAY = 1
+# The maximum number of simultaneous requests that will be performed by the
+# Scrapy downloader.
+#
+# IMPORTANT: Do not change this value, otherwise the Requests and Responses
+# when parsing the eBird checklist web pages get mixed up. Since each eBird
+# spider processes the checklists for one region and the number of checklists
+# to be downloaded is low (typically a few dozen) then this restriction does
+# not adversely affect performance.
+CONCURRENT_REQUESTS = 1
 
 #
 # Settings for the eBird spider.
