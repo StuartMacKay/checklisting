@@ -11,7 +11,8 @@ class ParseLocationsTestCase(TestCase):
 
     def setUp(self):
         """Initialize the test."""
-        self.spider = ebird_spider.EBirdSpider('REG', 10, '.')
+        self.spider = ebird_spider.EBirdSpider('REG')
+        self.spider.start_requests()
         self.records = [{
             'checklistID': 'CL00001',
             'comName': 'Common Name',
@@ -95,3 +96,69 @@ class ParseLocationsTestCase(TestCase):
         response = response_for_data([self.records[0]])
         results = self.spider.parse_locations(response)
         self.assertTrue(results.next().meta['checklist'])
+
+
+class IncludeHTMLTestCase(TestCase):
+    """Verify include_html attribute controls web page requests."""
+
+    def setUp(self):
+        """Initialize the test."""
+        self.records = [{
+            'checklistID': 'CL00001',
+            'comName': 'Common Name',
+            'countryCode': 'CC',
+            'countryName': 'Country',
+            'firstName': 'Name',
+            'howMany': 1,
+            'lastName': 'Surname',
+            'lat': 45.000000,
+            'lng': -45.000000,
+            'locID': 'L0000001',
+            'locName': 'Location 1',
+            'locationPrivate': True,
+            'obsDt': '2013-03-27 09:00',
+            'obsID': 'OBS0000001',
+            'obsReviewed': False,
+            'obsValid': True,
+            'presenceNoted': False,
+            'sciName': 'Scientific Name',
+            'subID': 'S0000001',
+            'subnational1Code': 'SN-01',
+            'subnational1Name': 'Region',
+            'subnational2Code': 'SN-02',
+            'subnational2Name': 'County',
+        }, {
+            'checklistID': 'CL00002',
+            'comName': 'Common Name',
+            'countryCode': 'CC',
+            'countryName': 'Country',
+            'firstName': 'Name',
+            'howMany': 1,
+            'lastName': 'Surname',
+            'lat': 50.000000,
+            'lng': -50.000000,
+            'locID': 'L0000002',
+            'locName': 'Location 2',
+            'locationPrivate': True,
+            'obsDt': '2013-03-27 10:00',
+            'obsID': 'OBS0000002',
+            'obsReviewed': False,
+            'obsValid': True,
+            'presenceNoted': False,
+            'sciName': 'Scientific Name',
+            'subID': 'S0000002',
+            'subnational1Code': 'SN-01',
+            'subnational1Name': 'Region',
+            'subnational2Code': 'SN-02',
+            'subnational2Name': 'County',
+        }]
+
+    def test_skip_parsing_webpages(self):
+        """Verify no web requests are made if include_html is False."""
+        spider = ebird_spider.EBirdSpider('REG')
+        spider.start_requests()
+        spider.include_html = False
+
+        response = response_for_data(self.records)
+        results = spider.parse_locations(response)
+        self.assertEqual(0, sum(1 for _ in results))

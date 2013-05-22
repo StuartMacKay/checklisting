@@ -382,6 +382,17 @@ class EBirdSpider(BaseSpider):
     Details on the eBird API and the different sets of fields returned can be
     found at https://confluence.cornell.edu/display/CLOISAPI/eBird+API+1.1
 
+    Three settings control the behaviour of the spider:
+
+    EBIRD_DOWNLOAD_DIR: the directory where the downloaded checklists
+    will be written in JSON format. The directory will be created if it does
+    not exist.
+
+    EBIRD_DURATION: the number of days to fetch observations for. The eBird
+    API allows access to observations up to 30 days old.
+
+    EBIRD_INCLUDE_HTML: include data from the checklist web page.
+
     """
 
     name = 'ebird'
@@ -395,38 +406,42 @@ class EBirdSpider(BaseSpider):
                    "r=%s&detail=full&back=%d&includeProvisional=true&fmt=json"
     checklist_url = "http://ebird.org/ebird/view/checklist?subID=%s"
 
-    def __init__(self, region, duration, directory, **kwargs):
+    def __init__(self, region, **kwargs):
         """Initialize the spider.
 
         Args:
             region (str): the code identifying the eBird region to fetch
                 observations for.
-            duration (str): the previous number of days to fetch observations
-                for - up to 30, the maximum supported by the eBird API.
-            directory (str): the target directory where the downloaded
-                checklists will be written to.
 
         Returns:
             EBirdSpider: a Scrapy crawler object.
         """
         super(EBirdSpider, self).__init__(**kwargs)
-
+        if not region:
+            raise ValueError("You must specify an eBird region")
         self.region = region
-        self.duration = int(duration)
-        self.directory = directory
-
-        logfile = kwargs.pop('logfile', 'ebird.log')
-        log.start(logfile=logfile)
 
     def start_requests(self):
-        """Request the recent observations for the region.
+        """Configure the spider and issue the first request to the eBird API.
 
         Returns:
             Request: yields a single request for the recent observations for
                 an eBird region.
         """
+        if hasattr(self, '_crawler'):
+            self.directory = self.settings['EBIRD_DOWNLOAD_DIR']
+            self.duration = int(self.settings['EBIRD_DURATION'])
+            self.include_html = self.settings['EBIRD_INCLUDE_HTML']
+        else:
+            self.directory = None
+            self.duration = 7
+            self.include_html = True
+
+        if self.directory and not os.path.exists(self.directory):
+            os.makedirs(self.directory)
+
         url = self.region_url % (self.region, self.duration)
-        yield Request(url, callback=self.parse_region)
+        return [Request(url, callback=self.parse_region)]
 
     def parse_region(self, response):
         """Request the recent observations for each location.
@@ -452,25 +467,23 @@ class EBirdSpider(BaseSpider):
                 recent observations for a location.
 
         Returns:
-            Request: yields a series of requests to the eBird website to get
-                web page used to display the details of a checklist.
+            Request: (when the attribute include_html is True) yields a series
+                of requests to the eBird website to get web page used to
+                display the details of a checklist.
 
         Even with the full results fields there is still useful information
         missing so additional requests are generated for the checklist web
-        page.
-
-        Currently there appears to be an intermittent problem with scrapy
-        matching requests and responses when parsing the web page so the
-        checklist is saved in case the additional data from the web page
-        cannot be added later.
+        page. Whether the spider continues and processes the checklist web
+        page is controlled by the EBIRD_INCLUDE_HTML setting.
         """
         checklists = self.api_parser(response).get_checklists()
         for checklist in checklists:
-            self.save_checklist(checklist)
-            identifier = checklist['identifier']
-            url = self.checklist_url % identifier
-            yield Request(url, callback=self.parse_checklist, dont_filter=True,
-                          meta={'checklist': checklist})
+            if self.include_html:
+                url = self.checklist_url % checklist['identifier']
+                yield Request(url, callback=self.parse_checklist,
+                              dont_filter=True, meta={'checklist': checklist})
+            else:
+                self.save_checklist(checklist)
 
     def parse_checklist(self, response):
         """Parse the missing checklist data from the web page.
@@ -484,21 +497,16 @@ class EBirdSpider(BaseSpider):
         merged with the data has been extracted from the web page and written
         to a file in the directory specified when the spider was created.
 
-        There appears to be an intermittent problem where the web page being
-        parsed does not match the checklist in the metadata (added in the
-        parse_location() method), It's not clear whether this is a bug in
-        scrapy or a side-effect of the redirects for security checks made by
-        Cornell. If the mismatch does occur then the web page contents are
-        simply discarded as the checklist has already been saved. An attempt
-        was made to store the checklists in a dict on the spider but when the
-        error occurs it appears that more than one response is returned for
-        some web pages, and none for others, so not all the checklists were
-        being updated. Simply discarding the response minimises the chances of
-        the checklist data being corrupted.
+        ISSUE: If the setting CONCURRENT_REQUEST != 1 then the checklist data
+        in the response sometimes does not match the checklist in the request
+        metadata. The problem appears to be intermittent, but for a given run
+        of the spider it usually happens after the 4th or 5th response. The
+        cause is not known. If the problem occurs then an error is logged and
+        the checklist is discarded.
         """
         if not response.url.endswith(response.meta['checklist']['identifier']):
-            self.log("Web page response is not for the checklist in the "
-                     "metadata, %s != %s" % (
+            self.log("Checklists in response and request don't match."
+                     "Identifiers: %s != %s" % (
                          response.url[-9:],
                          response.meta['checklist']['identifier']
                      ), log.ERROR)
@@ -506,10 +514,6 @@ class EBirdSpider(BaseSpider):
 
         update = self.html_parser(response).get_checklist()
         original = response.meta['checklist']
-
-        if self.settings['LOG_LEVEL'] == 'DEBUG':
-            self.compare_checklists(original, update)
-
         checklist = self.merge_checklists(original, update)
         checklist['url'] = response.url
         self.save_checklist(checklist)
@@ -545,33 +549,6 @@ class EBirdSpider(BaseSpider):
 
         return result
 
-    def compare_checklists(self, original, update):
-        """Compare two checklists.
-
-        Args:
-           original (dict): the checklist extracted from the JSON data.
-           update (dict): the checklist extracted from the web page.
-
-        This method is used to identify whether there are any differences
-        between the data available using the eBird API and the web page.
-        """
-
-        original_species = {entry['species']['standard_name']
-                            for entry in original['entries']}
-
-        update_species = {entry['species']['standard_name']
-                          for entry in update['entries']}
-
-        diff = list(original_species.difference(update_species))
-        if diff:
-            self.log("Species missing from the web page checklist: %s" %
-                     ', '.join(diff))
-
-        diff = list(update_species.difference(original_species))
-        if diff:
-            self.log("Species missing from the API checklist: %s" %
-                     ', '.join(diff))
-
     def save_checklist(self, checklist):
         """Save the checklist in JSON format.
 
@@ -579,8 +556,12 @@ class EBirdSpider(BaseSpider):
         checklist (dict); the checklist.
 
         The filename using the source, in this case 'ebird' and the checklist
-        identifier so that the data is always written to the same file.
+        identifier so that the data is always written to the same file. The
+        directory where the files are written is defined by the setting
+        EBIRD_DOWNLOAD_DIR. If the directory attribute is set to None then the
+        checklist is not saved (used for testing).
         """
-        path = os.path.join(self.directory, "%s-%s.json" % (
-            checklist['source'], checklist['identifier']))
-        save_json_data(path, checklist)
+        if self.directory:
+            path = os.path.join(self.directory, "%s-%s.json" % (
+                checklist['source'], checklist['identifier']))
+            save_json_data(path, checklist)
