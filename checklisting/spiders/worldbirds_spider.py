@@ -414,32 +414,6 @@ class WorldBirdsSpider(BaseSpider):
             callback=self.parse_visits
         )]
 
-    # def after_login(self, response):
-    #     """Get the Latest News page, if logging in is successful.
-    #
-    #     Args:
-    #         response (Response): the Latest News page..
-    #
-    #     Returns:
-    #         Request: POST the filled out login form.
-    #
-    #     If the login was unsuccessful then the login page is redisplayed with
-    #     the error message "Login failed".
-    #
-    #     """
-    #     if 'Login failed' in response.body:
-    #         self.log("WorldBirds login failed", level=log.ERROR)
-    #         return
-    #
-    #     return [
-    #         FormRequest(
-    #             url="http://%s/worldbirds/latestnews.php" % self.server,
-    #             formdata={'hdnVisitStart': '%d' % index},
-    #             dont_filter=True,
-    #             callback=self.parse_visits)
-    #         for index in range(0, self.pages * 10, 10)
-    #     ]
-
     def parse_visits(self, response):
         """Parse the Visit Highlights from the Latest News page.
 
@@ -482,27 +456,6 @@ class WorldBirdsSpider(BaseSpider):
                     callback=self.parse_checklist,
                     meta={'identifiers': values[1:]}
                 )
-
-    # def parse_visits(self, response):
-    #     """Parse the Visit Highlights from the Latest News page.
-    #
-    #     Args:
-    #         response (Response): the Latest News page containing the (paged)
-    #             table of Visit Highlights.
-    #
-    #     Returns:
-    #         Request: yields a series of Requests for each checklist listed.
-    #
-    #     """
-    #     url = ("http://%s/worldbirds/getdata.php"
-    #            "?a=VisitHighlightsDetails&id=%s&m=1") % self.server
-    #
-    #     for ids in self.visit_parser(response).get_identifiers():
-    #         yield Request(
-    #             url=url % ids[0],
-    #             callback=self.parse_checklist,
-    #             meta={'identifiers': ids}
-    #         )
 
     def parse_checklist(self, response):
         """Parse the contents of the checklist popup.

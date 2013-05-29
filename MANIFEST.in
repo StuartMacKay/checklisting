@@ -1,2 +1,4 @@
 include *.rst *.txt scrapy.cfg
 recursive-include checklisting *.py
+prune checklisting/tests
+prune checklisting/.*
