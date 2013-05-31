@@ -1,6 +1,9 @@
 Version 0.1a3
 -------------
 
+  * Login failures on the WorldBirds spider now raises a LoginException.
+  * Added an extension to record spider errors. Updated the status report to
+    include errors.
   * Added a status report which is generated and emailed when a spider closes.
   * Added support for local_settings.py to override scrapy settings.
   * Added a spider for downloading checklists for WorldBirds.

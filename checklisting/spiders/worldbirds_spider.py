@@ -9,11 +9,11 @@ import re
 
 from datetime import datetime, timedelta
 
-from scrapy import log
 from scrapy.http import Request, FormRequest
 from scrapy.spider import BaseSpider
 from scrapy.selector import HtmlXPathSelector
 
+from checklisting.exceptions import LoginException
 from checklisting.spiders.utils import save_json_data
 
 
@@ -432,9 +432,8 @@ class WorldBirdsSpider(BaseSpider):
             Request: yields a series of Requests for each checklist listed.
 
         """
-        if 'Login failed' in response.body:
-            self.log("WorldBirds login failed", level=log.ERROR)
-            return
+        if not response.url.endswith('latest_news.php'):
+            raise LoginException()
 
         limit = datetime.today() - timedelta(days=self.duration)
         visits = self.visit_parser(response).get_visits()
