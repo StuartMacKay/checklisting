@@ -1,4 +1,4 @@
-include *.rst *.txt scrapy.cfg
+include *.rst *.txt scrapy.cfg local_settings.py-example
 recursive-include checklisting *.py
 prune checklisting/tests
 prune checklisting/.*

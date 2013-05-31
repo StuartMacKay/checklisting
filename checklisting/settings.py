@@ -62,3 +62,13 @@ WORLDBIRDS_DOWNLOAD_DIR = DOWNLOAD_DIR
 # (one week) offers a reasonable trade-off between only fetching recent data
 # while still catching checklists that are added late.
 WORLDBIRDS_DURATION = 7
+
+
+#
+# Override settings with local values
+#
+
+try:
+    from local_settings import *
+except ImportError:
+    pass
