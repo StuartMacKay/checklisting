@@ -2,33 +2,8 @@
 #+STARTUP: indent
 #+STARTUP: content
 
-This file is used for notes about tasks and things todo that have not (yet)
+This file is used for notes about tasks and things to do that have not (yet)
 been added to the issue tracker.
-
-* add useful logging
-* add validation tests
-  run the crawlers on real sites and validate the downloaded files
-  checks that the crawlers work with real data
-  provides a common set of tests that ensure that the downloaded checklists
-  all follow the same format and can be loaded into a database.
-  the tests check whether field are set and what type/format they are in
-* update readme with installing from pypi and running the crawler
-  it does not make much sense to install in a "system" directory since you
-  need to be in the same directory as the scrapy.cfg file. Instead write up
-  how to download the crawlers into a local directory and run them.
-* add support for local settings
-  add this to checklisting/settings.py
-
-  try:
-      from local_settings import *
-  except ImportError:
-      pass
-
-  and create the file local_settings.py in the project root directory - same
-  one where scrapy.cfg resides.
-
-  See if runtime settings giving crawlers to run for the validation tests can
-  be added here
 
 * useful reading
   + http://news.ycombinator.com/item?id=4367933
