@@ -337,6 +337,10 @@ class WorldBirdsSpider(BaseSpider):
     not exist.
 
     WORLDBIRDS_DURATION: the number of days to fetch checklists for.
+
+    The spider keeps a list of checklists downloaded and save along with any
+    errors raised. These are used to create a status report by the extension,
+    SpiderStatusReport which is emailed out when the spider finishes.
     """
 
     name = "worldbirds"
@@ -382,6 +386,7 @@ class WorldBirdsSpider(BaseSpider):
         self.duration = 7
 
         self.checklists = []
+        self.errors = []
 
     def start_requests(self):
         """Configure the spider and get the login page for database.

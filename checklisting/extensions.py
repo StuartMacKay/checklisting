@@ -33,8 +33,13 @@ Time: %(time)s
   Checklists downloaded
 -------------------------
 %(checklists)s
-"""
 
+----------
+  Errors
+----------
+%(errors)s
+
+"""
     @classmethod
     def from_crawler(cls, crawler):
         extension = cls()
@@ -57,6 +62,7 @@ Time: %(time)s
                 'date': now.strftime("%d %b %Y"),
                 'time': now.strftime("%H:%M"),
                 'checklists': 'No checklists downloaded',
+                'errors': 'No errors reported',
             }
 
             checklists = getattr(spider, 'checklists', [])
@@ -71,9 +77,33 @@ Time: %(time)s
                     ))
                 context['checklists'] = '\n'.join(summary).encode('utf-8')
 
+            errors = getattr(spider, 'errors', [])
+            if errors:
+                summary = []
+                for url, failure in errors:
+                    summary.append("URL: %s\n%s\n\n" % (
+                        url,
+                        failure.getTraceback()
+                    ))
+                context['errors'] = '\n'.join(summary).encode('utf-8')
+
             mailer = MailSender.from_settings(spider.settings)
             mailer.send(
                 to=recipients,
                 subject="%s Status Report" % spider.name,
                 body=self.template % context
             )
+
+
+class ErrorLogger(object):
+
+    @classmethod
+    def from_crawler(cls, crawler):
+        extension = cls()
+        crawler.signals.connect(extension.spider_error,
+                                signal=signals.spider_error)
+        return extension
+
+    def spider_error(self, failure, response, spider):
+        spider.errors.append((response.url, failure))
+

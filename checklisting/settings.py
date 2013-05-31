@@ -42,6 +42,7 @@ SPIDER_STATUS_REPORT_RECIPIENTS = []
 
 EXTENSIONS = {
     'checklisting.extensions.SpiderStatusReport': 600,
+    'checklisting.extensions.ErrorLogger': 600,
 }
 
 
