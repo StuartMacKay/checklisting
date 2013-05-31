@@ -420,6 +420,7 @@ class EBirdSpider(BaseSpider):
         if not region:
             raise ValueError("You must specify an eBird region")
         self.region = region
+        self.checklists = []
 
     def start_requests(self):
         """Configure the spider and issue the first request to the eBird API.
@@ -560,8 +561,13 @@ class EBirdSpider(BaseSpider):
         directory where the files are written is defined by the setting
         EBIRD_DOWNLOAD_DIR. If the directory attribute is set to None then the
         checklist is not saved (used for testing).
+
+        The saved checklist is added to the list of checklists downloaded so
+        far so it can be used to generate a status report once the spider has
+        finished.
         """
         if self.directory:
             path = os.path.join(self.directory, "%s-%s.json" % (
                 checklist['source'], checklist['identifier']))
             save_json_data(path, checklist)
+            self.checklists.append(checklist)

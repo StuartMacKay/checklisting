@@ -381,6 +381,8 @@ class WorldBirdsSpider(BaseSpider):
         self.directory = None
         self.duration = 7
 
+        self.checklists = []
+
     def start_requests(self):
         """Configure the spider and get the login page for database.
 
@@ -493,7 +495,7 @@ class WorldBirdsSpider(BaseSpider):
         ids = response.meta['identifiers']
 
         url = "http://%s/worldbirds/getdata.php" \
-               "?a=ObserverDetails&id=%s"
+              "?a=ObserverDetails&id=%s"
 
         yield Request(
             url=url % (self.server, ids[2]),
@@ -523,9 +525,14 @@ class WorldBirdsSpider(BaseSpider):
         file. The directory where the files are written is defined by the
         setting WORLDBIRDS_DOWNLOAD_DIR. If the directory attribute is set to
         None then the checklist is not saved (used for testing).
+
+        The saved checklist is added to the list of checklists downloaded so
+        far so it can be used to generate a status report once the spider has
+        finished.
         """
         if self.directory:
             source = checklist['source'].replace(' ', '-').lower()
             path = os.path.join(self.directory, "%s-%s.json" % (
                 source, checklist['identifier']))
             save_json_data(path, checklist)
+            self.checklists.append(checklist)
