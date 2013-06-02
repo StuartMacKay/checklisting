@@ -74,6 +74,14 @@ WORLDBIRDS_DOWNLOAD_DIR = DOWNLOAD_DIR
 # while still catching checklists that are added late.
 WORLDBIRDS_DURATION = 7
 
+#
+# Settings for tests
+#
+
+# A list of the spiders and arguments used to initialize them. See
+# local_settings.py-example for more details.
+CHECKLISTING_DOWNLOADS_TEST = []
+
 
 #
 # Override settings with local values

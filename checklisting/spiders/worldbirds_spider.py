@@ -429,7 +429,7 @@ class WorldBirdsSpider(BaseSpider):
             Request: yields a series of Requests for each checklist listed.
 
         """
-        if not response.url.endswith('latest_news.php'):
+        if not response.url.endswith('latestnews.php'):
             raise LoginException()
 
         limit = datetime.today() - timedelta(days=self.duration)
