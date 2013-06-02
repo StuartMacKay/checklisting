@@ -382,8 +382,6 @@ class WorldBirdsSpider(BaseSpider):
                              " (yet) supported by this crawler.")
         self.start_url = self.databases[country.lower()]
         self.server = self.start_url.split('/')[2]
-        self.directory = None
-        self.duration = 7
 
         self.checklists = []
         self.errors = []
@@ -395,9 +393,8 @@ class WorldBirdsSpider(BaseSpider):
             Request: yields a single request for the login page of the
                 WorldBirds database for the selected country.
         """
-        if hasattr(self, '_crawler'):
-            self.directory = self.settings['WORLDBIRDS_DOWNLOAD_DIR']
-            self.duration = self.settings['WORLDBIRDS_DURATION']
+        self.directory = self.settings['WORLDBIRDS_DOWNLOAD_DIR']
+        self.duration = self.settings['WORLDBIRDS_DURATION']
 
         if self.directory and not os.path.exists(self.directory):
             os.makedirs(self.directory)

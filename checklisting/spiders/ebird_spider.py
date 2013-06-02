@@ -434,14 +434,9 @@ class EBirdSpider(BaseSpider):
             Request: yields a single request for the recent observations for
                 an eBird region.
         """
-        if hasattr(self, '_crawler'):
-            self.directory = self.settings['EBIRD_DOWNLOAD_DIR']
-            self.duration = int(self.settings['EBIRD_DURATION'])
-            self.include_html = self.settings['EBIRD_INCLUDE_HTML']
-        else:
-            self.directory = None
-            self.duration = 7
-            self.include_html = True
+        self.directory = self.settings['EBIRD_DOWNLOAD_DIR']
+        self.duration = int(self.settings['EBIRD_DURATION'])
+        self.include_html = self.settings['EBIRD_INCLUDE_HTML']
 
         if self.directory and not os.path.exists(self.directory):
             os.makedirs(self.directory)
