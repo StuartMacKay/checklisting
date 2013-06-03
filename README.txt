@@ -102,3 +102,25 @@ Settings can be changed by either editing checklisting/settings.py or changing
 the settings when the crawler is run. For example:
 
     scrapy crawl worldbirds ... -s WORLDBIRDS_DOWNLOAD_DIR=.
+
+
+Install
+-------
+
+Checklisting is available from PyPI so you can install it using pip
+
+    pip install checklisting
+
+To run the crawlers you have to tell scrapy which settings to use. This is
+done using the SCRAPY_SETTINGS_MODULE environment variable (currently you 
+cannot specify the settings file as part of the scrapy command). For 
+example a bash shell use:
+
+    export SCRAPY_SETTINGS_MODULE=checklisting.settings
+
+    scrapy crawl ebird -a region=PT-11
+
+There's no simple way to override the settings with a local_settings.py but 
+all the settings can be overridden from the command line with the -s option:
+
+    scrapy crawl ebird -a region=PT-11 -s EBIRD_DOWNLOAD_DIR=.
