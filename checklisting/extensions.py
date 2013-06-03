@@ -3,6 +3,7 @@
 import datetime
 import unicodedata
 
+from scrapy import log
 from scrapy import signals
 from scrapy.mail import MailSender
 
@@ -40,6 +41,7 @@ Time: %(time)s
 %(errors)s
 
 """
+
     @classmethod
     def from_crawler(cls, crawler):
         extension = cls()
@@ -54,45 +56,55 @@ Time: %(time)s
     def spider_closed(self, spider):
         recipients = spider.settings['SPIDER_STATUS_REPORT_RECIPIENTS']
 
-        if recipients:
-            now = datetime.datetime.today()
+        if not recipients:
+            spider.log("No recipients listed to receive status report",
+                       log.INFO)
+            return
 
-            context = {
-                'spider': spider.name,
-                'date': now.strftime("%d %b %Y"),
-                'time': now.strftime("%H:%M"),
-                'checklists': 'No checklists downloaded',
-                'errors': 'No errors reported',
-            }
+        spider.log("Generating status report", log.INFO)
 
-            checklists = getattr(spider, 'checklists', [])
-            if checklists:
-                summary = []
-                for checklist in checklists:
-                    summary.append("%s %s, %s (%s)" % (
-                        checklist['date'],
-                        checklist['time'],
-                        self.remove_accents(checklist['location']['name']),
-                        self.remove_accents(checklist['submitted_by'])
-                    ))
-                context['checklists'] = '\n'.join(summary).encode('utf-8')
+        now = datetime.datetime.today()
 
-            errors = getattr(spider, 'errors', [])
-            if errors:
-                summary = []
-                for url, failure in errors:
-                    summary.append("URL: %s\n%s\n\n" % (
-                        url,
-                        failure.getTraceback()
-                    ))
-                context['errors'] = '\n'.join(summary).encode('utf-8')
+        context = {
+            'spider': spider.name,
+            'date': now.strftime("%d %b %Y"),
+            'time': now.strftime("%H:%M"),
+            'checklists': 'No checklists downloaded',
+            'errors': 'No errors reported',
+        }
 
-            mailer = MailSender.from_settings(spider.settings)
-            mailer.send(
-                to=recipients,
-                subject="%s Status Report" % spider.name,
-                body=self.template % context
-            )
+        checklists = getattr(spider, 'checklists', [])
+        spider.log("%d checklists downloaded" % len(checklists), log.INFO)
+
+        if checklists:
+            summary = []
+            for checklist in checklists:
+                summary.append("%s %s, %s (%s)" % (
+                    checklist['date'],
+                    checklist['time'],
+                    self.remove_accents(checklist['location']['name']),
+                    self.remove_accents(checklist['submitted_by'])
+                ))
+            context['checklists'] = '\n'.join(summary).encode('utf-8')
+
+        errors = getattr(spider, 'errors', [])
+        spider.log("%d errors reported" % len(errors), log.INFO)
+
+        if errors:
+            summary = []
+            for url, failure in errors:
+                summary.append("URL: %s\n%s\n\n" % (
+                    url,
+                    failure.getTraceback()
+                ))
+            context['errors'] = '\n'.join(summary).encode('utf-8')
+
+        mailer = MailSender.from_settings(spider.settings)
+        mailer.send(
+            to=recipients,
+            subject="%s Status Report" % spider.name,
+            body=self.template % context
+        )
 
 
 class ErrorLogger(object):
@@ -106,4 +118,3 @@ class ErrorLogger(object):
 
     def spider_error(self, failure, response, spider):
         spider.errors.append((response.url, failure))
-

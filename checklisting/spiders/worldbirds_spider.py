@@ -10,6 +10,7 @@ import re
 from datetime import datetime, timedelta
 
 from scrapy.http import Request, FormRequest
+from scrapy import log
 from scrapy.spider import BaseSpider
 from scrapy.selector import HtmlXPathSelector
 
@@ -380,8 +381,10 @@ class WorldBirdsSpider(BaseSpider):
         if country.lower() not in self.databases:
             raise ValueError("Sorry, %s is one of the countries that is not"
                              " (yet) supported by this crawler.")
+
         self.start_url = self.databases[country.lower()]
         self.server = self.start_url.split('/')[2]
+        self.log("Downloading checklists from %s" % self.server, log.INFO)
 
         self.checklists = []
         self.errors = []
@@ -393,11 +396,16 @@ class WorldBirdsSpider(BaseSpider):
             Request: yields a single request for the login page of the
                 WorldBirds database for the selected country.
         """
-        self.directory = self.settings['WORLDBIRDS_DOWNLOAD_DIR']
-        self.duration = self.settings['WORLDBIRDS_DURATION']
+        duration = self.settings['WORLDBIRDS_DURATION']
+        self.limit = (datetime.today() - timedelta(days=duration)).replace(
+            hour=0, minute=0, second=0, microsecond=0)
+        self.log("Fetching checklists added since %s" %
+                 self.limit.strftime("%Y-%m-%d"), log.INFO)
 
+        self.directory = self.settings['WORLDBIRDS_DOWNLOAD_DIR']
         if self.directory and not os.path.exists(self.directory):
             os.makedirs(self.directory)
+        self.log("Writing checklists to %s" % self.directory, log.INFO)
 
         return [Request(url=self.start_url, callback=self.login)]
 
@@ -432,15 +440,17 @@ class WorldBirdsSpider(BaseSpider):
         if not response.url.endswith('latestnews.php'):
             raise LoginException()
 
-        limit = datetime.today() - timedelta(days=self.duration)
-        visits = self.visit_parser(response).get_visits()
-
         if 'offset' in response.meta:
             offset = response.meta['offset'] + 10
         else:
             offset = 10
 
-        if visits[-1][0] >= limit:
+        self.log("Extracting visits from Latest News, page %d" % (
+            offset / 10), log.DEBUG)
+
+        visits = self.visit_parser(response).get_visits()
+
+        if visits[-1][0] >= self.limit:
             yield FormRequest(
                 url="http://%s/worldbirds/latestnews.php" % self.server,
                 formdata={'hdnVisitStart': '%d' % offset},
@@ -453,7 +463,7 @@ class WorldBirdsSpider(BaseSpider):
               "?a=VisitHighlightsDetails&id=%s&m=1"
 
         for values in visits:
-            if values[0] >= limit:
+            if values[0] >= self.limit:
                 yield Request(
                     url=url % (self.server, values[1]),
                     callback=self.parse_checklist,
@@ -537,3 +547,7 @@ class WorldBirdsSpider(BaseSpider):
                 source, checklist['identifier']))
             save_json_data(path, checklist)
             self.checklists.append(checklist)
+
+            self.log("Wrote %s: %s %s (%s)" % (
+                path, checklist['date'], checklist['location']['name'],
+                checklist['submitted_by']), log.INFO)

@@ -423,6 +423,8 @@ class EBirdSpider(BaseSpider):
         if not region:
             raise ValueError("You must specify an eBird region")
         self.region = region
+        self.log("Downloading checklists for region: %s" % self.region,
+                 log.INFO)
 
         self.checklists = []
         self.errors = []
@@ -434,12 +436,21 @@ class EBirdSpider(BaseSpider):
             Request: yields a single request for the recent observations for
                 an eBird region.
         """
-        self.directory = self.settings['EBIRD_DOWNLOAD_DIR']
         self.duration = int(self.settings['EBIRD_DURATION'])
-        self.include_html = self.settings['EBIRD_INCLUDE_HTML']
+        self.log("Fetching observations for the past %d days" % self.duration,
+                 log.INFO)
 
+        self.directory = self.settings['EBIRD_DOWNLOAD_DIR']
         if self.directory and not os.path.exists(self.directory):
             os.makedirs(self.directory)
+        self.log("Writing checklists to %s" % self.directory, log.INFO)
+
+        self.include_html = self.settings['EBIRD_INCLUDE_HTML']
+        if self.include_html:
+            self.log("Downloading checklists from API and web pages", log.INFO)
+        else:
+            self.log("Downloading checklists from API only", log.INFO)
+
 
         url = self.region_url % (self.region, self.duration)
         return [Request(url, callback=self.parse_region)]
@@ -571,3 +582,7 @@ class EBirdSpider(BaseSpider):
                 checklist['source'], checklist['identifier']))
             save_json_data(path, checklist)
             self.checklists.append(checklist)
+
+            self.log("Wrote %s: %s %s (%s)" % (
+                path, checklist['date'], checklist['location']['name'],
+                checklist['submitted_by']), log.DEBUG)
