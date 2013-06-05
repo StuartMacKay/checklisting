@@ -10,7 +10,9 @@ file, checklisting/settings.py.
 #
 
 # Enable sending of  status reports by email
-#EMAIL_SPIDER_STATUS_REPORTS = True
+#SPIDER_STATUS_REPORT_RECIPIENTS = [
+#    'user@example.com',
+#]
 
 # The email address of the sender
 #MAIL_FROM = ''

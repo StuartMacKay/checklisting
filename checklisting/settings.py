@@ -37,7 +37,7 @@ DOWNLOAD_DIR = os.path.join(tempfile.gettempdir(), 'checklisting')
 
 # The list of email addresses where status reports are sent. Be sure to also
 # set the values for the SMTP server used to send the email message.
-SPIDER_STATUS_REPORT_RECIPIENTS = []
+CHECKLISTING_STATUS_REPORT_RECIPIENTS = []
 
 
 EXTENSIONS = {
@@ -88,6 +88,6 @@ CHECKLISTING_DOWNLOADS_TEST = []
 #
 
 try:
-    from local_settings import *
+    from checklisting.local_settings import *
 except ImportError:
     pass

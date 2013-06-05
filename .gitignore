@@ -16,4 +16,4 @@ tmp/
 .ropeproject
 
 eproject.cfg
-local_settings.py
+checklisting/local_settings.py
