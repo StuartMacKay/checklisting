@@ -18,9 +18,7 @@ setup(
     url='http://pypi.python.org/pypi/checklisting/',
     license='GPL',
     packages=find_packages(),
-    keywords='eBird crawler checklists',
-    test_suite='nose.collector',
-    tests_require=['nose'],
+    keywords='eBird worldbirds web crawler birds checklists',
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Environment :: Console",
