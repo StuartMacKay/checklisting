@@ -12,7 +12,7 @@ setup(
     name='checklisting',
     version='0.1a2',
     description='Web crawlers for downloading bird checklists.',
-    long_description=read("README.txt"),
+    long_description=read("README.rst"),
     author='Stuart MacKay',
     author_email='smackay@flagstonesoftware.com',
     url='http://pypi.python.org/pypi/checklisting/',
