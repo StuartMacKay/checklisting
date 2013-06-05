@@ -2,6 +2,10 @@
 
 from unittest import TestCase
 
+from scrapy.crawler import Crawler
+from scrapy.settings import CrawlerSettings
+
+from checklisting import settings
 from checklisting.spiders import ebird_spider
 from checklisting.tests.utils import response_for_data
 
@@ -11,7 +15,10 @@ class ParseRegionTestCase(TestCase):
 
     def setUp(self):
         """Initialize the test."""
+        crawler = Crawler(CrawlerSettings(settings))
+        crawler.configure()
         self.spider = ebird_spider.EBirdSpider('REG')
+        self.spider.set_crawler(crawler)
         self.spider.start_requests()
 
     def test_request_count(self):

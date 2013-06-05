@@ -1,12 +1,5 @@
-Checklisting is a set of web crawlers for downloading checklists from
-third-party databases.
-
-Crawlers available:
-
-   ebird      Download recently submitted checklists from http://ebird.org
-              for a given region.
-
-
+eBird
+-----
 The crawler for eBird uses the official API:
 
     https://confluence.cornell.edu/display/CLOISAPI/eBird+API+1.1
@@ -22,12 +15,11 @@ The crawler is run using the crawl command-line tool:
 
 where,
 
-    region     the region code used by Cornell to identify all the different
-               regions supported by the database, e.g. PT-11.
+    region  the region code used by Cornell to identify all the different
+            regions supported by the database, e.g. PT-11.
 
-               A full list of region codes can be found in the Supplemental
-               Documents section of the guide, "Uploading Data to eBird",
-               http://help.ebird.org/customer/portal/articles/973915-uploading-data-to-ebird#supplemental-documents
+A full list of region codes can be found in "Uploading Data to eBird",
+http://help.ebird.org/customer/portal/articles/973915-uploading-data-to-ebird#supplemental-documents
 
 In addition, three settings also control the behaviour of the crawler:
 
@@ -50,3 +42,5 @@ These settings can be changed by either editing checklisting/settings.py or
 changing the settings when the crawler is run. For example:
 
     scrapy crawl ebird -a region=PT-11 -s EBIRD_DURATION=30
+
+

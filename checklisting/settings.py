@@ -11,7 +11,7 @@ NEWSPIDER_MODULE = 'checklisting.spiders'
 
 LOG_LEVEL = 'INFO'
 LOG_STDOUT = True
-LOG_FILE = 'eBird.log'
+LOG_FILE = 'checklisting.log'
 
 # eBird redirects requests for the checklist web page to do some security
 # checks so the redirect middleware needs to be enabled.
@@ -29,14 +29,29 @@ COOKIES_ENABLED = True
 # not adversely affect performance.
 CONCURRENT_REQUESTS = 1
 
+# Define a shared directory for crawler downloads. The crawlers use the name
+# of the source in file names so checklists from different sources will not
+# overwrite each other. Here checklists are written to python's tmp directory,
+# but any path can be used. It will be created if it does not exist.
+DOWNLOAD_DIR = os.path.join(tempfile.gettempdir(), 'checklisting')
+
+# The list of email addresses where status reports are sent. Be sure to also
+# set the values for the SMTP server used to send the email message.
+CHECKLISTING_STATUS_REPORT_RECIPIENTS = []
+
+
+EXTENSIONS = {
+    'checklisting.extensions.SpiderStatusReport': 600,
+    'checklisting.extensions.ErrorLogger': 600,
+}
+
+
 #
 # Settings for the eBird spider.
 #
 
-# Set the directory where the downloaded checklists will be written. Here
-# checklists are written to python's tmp directory, but any path can be used.
-# It will be created if it does not exist.
-EBIRD_DOWNLOAD_DIR = os.path.join(tempfile.gettempdir(), 'ebird')
+# Set the directory where the downloaded checklists will be written.
+EBIRD_DOWNLOAD_DIR = DOWNLOAD_DIR
 
 # Get the observations from the eBird API from the last <n> days. A value of
 # 7 (one week) offers a reasonable trade-off between only fetching recent data
@@ -46,3 +61,33 @@ EBIRD_DURATION = 7
 # Whether the checklist web page is also parsed to extract data (True) or
 # only the data from the API is used (False).
 EBIRD_INCLUDE_HTML = True
+
+#
+# Settings for the WorldBirds spider.
+#
+
+# Set the directory where the downloaded checklists will be written.
+WORLDBIRDS_DOWNLOAD_DIR = DOWNLOAD_DIR
+
+# Get the checklists for the last <n> days, including today. A value of 7
+# (one week) offers a reasonable trade-off between only fetching recent data
+# while still catching checklists that are added late.
+WORLDBIRDS_DURATION = 7
+
+#
+# Settings for tests
+#
+
+# A list of the spiders and arguments used to initialize them. See
+# local_settings.py-example for more details.
+CHECKLISTING_DOWNLOADS_TEST = []
+
+
+#
+# Override settings with local values
+#
+
+try:
+    from checklisting.local_settings import *
+except ImportError:
+    pass

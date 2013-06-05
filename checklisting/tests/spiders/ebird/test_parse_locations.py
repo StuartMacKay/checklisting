@@ -2,6 +2,10 @@
 
 from unittest import TestCase
 
+from scrapy.crawler import Crawler
+from scrapy.settings import CrawlerSettings
+
+from checklisting import settings
 from checklisting.spiders import ebird_spider
 from checklisting.tests.utils import response_for_data
 
@@ -11,7 +15,10 @@ class ParseLocationsTestCase(TestCase):
 
     def setUp(self):
         """Initialize the test."""
+        crawler = Crawler(CrawlerSettings(settings))
+        crawler.configure()
         self.spider = ebird_spider.EBirdSpider('REG')
+        self.spider.set_crawler(crawler)
         self.spider.start_requests()
         self.records = [{
             'checklistID': 'CL00001',
@@ -155,7 +162,10 @@ class IncludeHTMLTestCase(TestCase):
 
     def test_skip_parsing_webpages(self):
         """Verify no web requests are made if include_html is False."""
+        crawler = Crawler(CrawlerSettings(settings))
+        crawler.configure()
         spider = ebird_spider.EBirdSpider('REG')
+        spider.set_crawler(crawler)
         spider.start_requests()
         spider.include_html = False
 

@@ -2,6 +2,10 @@
 
 from unittest import TestCase
 
+from scrapy.crawler import Crawler
+from scrapy.settings import CrawlerSettings
+
+from checklisting import settings
 from checklisting.spiders import ebird_spider
 
 
@@ -10,7 +14,10 @@ class StartRequestsTestCase(TestCase):
 
     def setUp(self):
         """Initialize the test."""
+        crawler = Crawler(CrawlerSettings(settings))
+        crawler.configure()
         self.spider = ebird_spider.EBirdSpider('REG')
+        self.spider.set_crawler(crawler)
         self.requests = self.spider.start_requests()
 
     def test_request_count(self):
@@ -29,12 +36,12 @@ class StartRequestsTestCase(TestCase):
 
     def test_duration(self):
         """Verify the number of days to fetch observations for is set."""
-        self.assertEqual(7, self.spider.duration)
+        self.assertEqual(settings.EBIRD_DURATION, self.spider.duration)
 
     def test_directory(self):
         """Verify the directory where checklists are saved is set."""
-        self.assertIsNone(self.spider.directory)
+        self.assertEqual(settings.EBIRD_DOWNLOAD_DIR, self.spider.directory)
 
     def test_include_html(self):
         """Verify the include_html flag is set."""
-        self.assertTrue(self.spider.include_html)
+        self.assertEqual(settings.EBIRD_INCLUDE_HTML, self.spider.include_html)

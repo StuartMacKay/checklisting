@@ -10,17 +10,15 @@ def read(filename):
 
 setup(
     name='checklisting',
-    version='0.1a2',
+    version='0.1a3',
     description='Web crawlers for downloading bird checklists.',
-    long_description=read("README.txt"),
+    long_description=read("README.rst"),
     author='Stuart MacKay',
     author_email='smackay@flagstonesoftware.com',
     url='http://pypi.python.org/pypi/checklisting/',
     license='GPL',
     packages=find_packages(),
-    keywords='eBird crawler checklists',
-    test_suite='nose.collector',
-    tests_require=['nose'],
+    keywords='eBird worldbirds web crawler birds checklists',
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Environment :: Console",

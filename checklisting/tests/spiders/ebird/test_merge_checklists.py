@@ -2,6 +2,10 @@
 
 from unittest import TestCase
 
+from scrapy.crawler import Crawler
+from scrapy.settings import CrawlerSettings
+
+from checklisting import settings
 from checklisting.spiders import ebird_spider
 
 
@@ -10,7 +14,10 @@ class MergeChecklistsTestCase(TestCase):
 
     def setUp(self):
         """Initialize the test."""
+        crawler = Crawler(CrawlerSettings(settings))
+        crawler.configure()
         self.spider = ebird_spider.EBirdSpider('REG')
+        self.spider.set_crawler(crawler)
         self.lista = {
             'identifier': 'S0000001',
             'date': '2013-03-27',
