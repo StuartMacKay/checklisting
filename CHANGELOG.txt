@@ -9,6 +9,7 @@ Version 0.1a4
   * Protocols are defined using a name rather than a pre-defined code. This
     avoids making assumptions on where and how the data will be loaded.
   * Species records now contain only two fields: name and scientific_name.
+  * Removed the language suffix from comment fields.
 
 Version 0.1a3
 -------------

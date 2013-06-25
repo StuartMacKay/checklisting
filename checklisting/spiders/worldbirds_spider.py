@@ -220,7 +220,7 @@ class ChecklistParser(object):
             'identifier': '',
             'species': self.get_species(row),
             'count': count,
-            'comment': columns[3].strip(),
+            'comment_en': columns[3].strip(),
         }
 
     def get_species(self, row):

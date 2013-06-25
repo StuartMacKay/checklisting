@@ -303,7 +303,7 @@ class HTMLParser(object):
                 'subspecies': subspecies,
                 'count': count,
                 'details': self.get_entry_details(selector),
-                'comment_en': self.get_entry_comment(selector),
+                'comment': self.get_entry_comment(selector),
             })
         return entries
 
@@ -442,7 +442,6 @@ class EBirdSpider(BaseSpider):
             self.log("Downloading checklists from API and web pages", log.INFO)
         else:
             self.log("Downloading checklists from API only", log.INFO)
-
 
         url = self.region_url % (self.region, self.duration)
         return [Request(url, callback=self.parse_region)]
