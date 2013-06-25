@@ -40,7 +40,8 @@ class StartRequestsTestCase(TestCase):
 
     def test_directory(self):
         """Verify the directory where checklists are saved is set."""
-        self.assertEqual(settings.EBIRD_DOWNLOAD_DIR, self.spider.directory)
+        self.assertEqual(settings.CHECKLISTING_DOWNLOAD_DIR,
+                         self.spider.directory)
 
     def test_include_html(self):
         """Verify the include_html flag is set."""

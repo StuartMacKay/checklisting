@@ -333,7 +333,7 @@ class WorldBirdsSpider(BaseSpider):
 
     The following settings control the behaviour of the spider:
 
-    WORLDBIRDS_DOWNLOAD_DIR: the directory where the downloaded checklists
+    CHECKLISTING_DOWNLOAD_DIR: the directory where the downloaded checklists
     will be written in JSON format. The directory will be created if it does
     not exist.
 
@@ -402,7 +402,7 @@ class WorldBirdsSpider(BaseSpider):
         self.log("Fetching checklists added since %s" %
                  self.limit.strftime("%Y-%m-%d"), log.INFO)
 
-        self.directory = self.settings['WORLDBIRDS_DOWNLOAD_DIR']
+        self.directory = self.settings['CHECKLISTING_DOWNLOAD_DIR']
         if self.directory and not os.path.exists(self.directory):
             os.makedirs(self.directory)
         self.log("Writing checklists to %s" % self.directory, log.INFO)
@@ -534,8 +534,8 @@ class WorldBirdsSpider(BaseSpider):
         The filename using the source, in this case 'worldbirds' and the
         checklist identifier so that the data is always written to the same
         file. The directory where the files are written is defined by the
-        setting WORLDBIRDS_DOWNLOAD_DIR. If the directory attribute is set to
-        None then the checklist is not saved (used for testing).
+        setting CHECKLISTING_DOWNLOAD_DIR. If the directory attribute is set
+        to None then the checklist is not saved (used for testing).
 
         The saved checklist is added to the list of checklists downloaded so
         far so it can be used to generate a status report once the spider has

@@ -33,7 +33,7 @@ CONCURRENT_REQUESTS = 1
 # of the source in file names so checklists from different sources will not
 # overwrite each other. Here checklists are written to python's tmp directory,
 # but any path can be used. It will be created if it does not exist.
-DOWNLOAD_DIR = os.path.join(tempfile.gettempdir(), 'checklisting')
+CHECKLISTING_DOWNLOAD_DIR = os.path.join(tempfile.gettempdir(), 'checklisting')
 
 # The list of email addresses where status reports are sent. Be sure to also
 # set the values for the SMTP server used to send the email message.
@@ -50,9 +50,6 @@ EXTENSIONS = {
 # Settings for the eBird spider.
 #
 
-# Set the directory where the downloaded checklists will be written.
-EBIRD_DOWNLOAD_DIR = DOWNLOAD_DIR
-
 # Get the observations from the eBird API from the last <n> days. A value of
 # 7 (one week) offers a reasonable trade-off between only fetching recent data
 # while still catching checklists that are added late.
@@ -65,9 +62,6 @@ EBIRD_INCLUDE_HTML = True
 #
 # Settings for the WorldBirds spider.
 #
-
-# Set the directory where the downloaded checklists will be written.
-WORLDBIRDS_DOWNLOAD_DIR = DOWNLOAD_DIR
 
 # Get the checklists for the last <n> days, including today. A value of 7
 # (one week) offers a reasonable trade-off between only fetching recent data

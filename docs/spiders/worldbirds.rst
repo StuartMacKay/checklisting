@@ -31,8 +31,8 @@ Supported country codes:
 
 The following setting also control the behaviour of the crawler:
 
-    WORLDBIRDS_DOWNLOAD_DIR: the directory where the downloaded checklists will
-    by written in JSON format. The value defined in the settings uses the
+    CHECKLISTING_DOWNLOAD_DIR: the directory where the downloaded checklists
+    will by written in JSON format. The value defined in the settings uses the
     temporary used by python but it can be set to any path. Filenames use the
     name of the source and the checklist identifier so running the crawler
     multiple times will overwrite any existing files but will not destroy any
@@ -43,6 +43,6 @@ The following setting also control the behaviour of the crawler:
 Settings can be changed by either editing checklisting/settings.py or changing
 the settings when the crawler is run. For example:
 
-    scrapy crawl worldbirds ... -s WORLDBIRDS_DOWNLOAD_DIR=.
+    scrapy crawl worldbirds ... -s CHECKLISTING_DOWNLOAD_DIR=.
 
 

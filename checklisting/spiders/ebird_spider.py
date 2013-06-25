@@ -384,7 +384,7 @@ class EBirdSpider(BaseSpider):
 
     Three settings control the behaviour of the spider:
 
-    EBIRD_DOWNLOAD_DIR: the directory where the downloaded checklists
+    CHECKLISTING_DOWNLOAD_DIR: the directory where the downloaded checklists
     will be written in JSON format. The directory will be created if it does
     not exist.
 
@@ -440,7 +440,7 @@ class EBirdSpider(BaseSpider):
         self.log("Fetching observations for the past %d days" % self.duration,
                  log.INFO)
 
-        self.directory = self.settings['EBIRD_DOWNLOAD_DIR']
+        self.directory = self.settings['CHECKLISTING_DOWNLOAD_DIR']
         if self.directory and not os.path.exists(self.directory):
             os.makedirs(self.directory)
         self.log("Writing checklists to %s" % self.directory, log.INFO)
@@ -570,8 +570,8 @@ class EBirdSpider(BaseSpider):
         The filename using the source, in this case 'ebird' and the checklist
         identifier so that the data is always written to the same file. The
         directory where the files are written is defined by the setting
-        EBIRD_DOWNLOAD_DIR. If the directory attribute is set to None then the
-        checklist is not saved (used for testing).
+        CHECKLISTING_DOWNLOAD_DIR. If the directory attribute is set to None
+        then the checklist is not saved (used for testing).
 
         The saved checklist is added to the list of checklists downloaded so
         far so it can be used to generate a status report once the spider has
