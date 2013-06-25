@@ -39,8 +39,7 @@ class MergeChecklistsTestCase(TestCase):
                 {
                     'identifier': 'OBS0000001',
                     'species': {
-                        'standard_name': 'Common Name',
-                        'common_name_en': 'Common Name',
+                        'name': 'Common Name',
                         'scientific_name': 'Scientific Name',
                     },
                     'count': 23
@@ -60,8 +59,7 @@ class MergeChecklistsTestCase(TestCase):
             'entries': [
                 {
                     'species': {
-                        'standard_name': 'Common Name',
-                        'common_name_en': 'Common Name',
+                        'name': 'Common Name',
                         'scientific_name': 'Scientific Name',
                     },
                     'count': 23,
@@ -107,8 +105,7 @@ class MergeChecklistsTestCase(TestCase):
         """Verify new entries in the second list are added."""
         self.listb['entries'].append({
             'species': {
-                'standard_name': 'New Name',
-                'common_name_en': 'New Name',
+                'name': 'New Name',
                 'scientific_name': 'New Scientific Name',
             },
             'count': 10,
@@ -121,8 +118,7 @@ class MergeChecklistsTestCase(TestCase):
         """Verify entries in the second list overwrite those from the first."""
         self.listb['entries'].append({
             'species': {
-                'standard_name': 'Common Name',
-                'common_name_en': 'Common Name',
+                'name': 'Common Name',
                 'scientific_name': 'Scientific Name',
             },
             'count': 10,

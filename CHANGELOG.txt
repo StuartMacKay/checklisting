@@ -10,6 +10,7 @@ Version 0.1a4
     avoids making assumptions on where and how the data will be loaded.
   * Species records now contain only two fields: name and scientific_name.
   * Removed the language suffix from comment fields.
+  * Added tests to download and validate checklists from real sites.
 
 Version 0.1a3
 -------------

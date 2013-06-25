@@ -275,28 +275,28 @@ class HTMLParser(object):
         """
         entries = []
         for selector in self.docroot.select('//tr[@class="spp-entry"]'):
-            standard_name = selector.select(
+            name = selector.select(
                 './/h5[@class="se-name"]/text()').extract()[0].strip()
             count = selector.select(
                 './/h5[@class="se-count"]/text()').extract()[0].strip()
 
-            if '(' in standard_name:
+            if '(' in name:
                 species = {
-                    'standard_name': standard_name.split('(')[0].strip(),
+                    'name': name.split('(')[0].strip(),
                 }
                 subspecies = {
-                    'standard_name': standard_name,
+                    'name': name,
                 }
             else:
                 species = {
-                    'standard_name': standard_name,
+                    'name': name,
                 }
                 subspecies = {}
 
             try:
-                int(count)
+                count = int(count)
             except ValueError:
-                count = '0'
+                count = 0
 
             entries.append({
                 'species': species,
@@ -538,11 +538,11 @@ class EBirdSpider(BaseSpider):
         result['observer_count'] = update['observer_count']
         result['protocol'] = update['protocol']
 
-        entries = {entry['species']['standard_name']: entry
+        entries = {entry['species']['name']: entry
                    for entry in result['entries']}
 
         for entry in update['entries']:
-            key = entry['species']['standard_name']
+            key = entry['species']['name']
             if key in entries:
                 entries[key].update(entry)
             else:

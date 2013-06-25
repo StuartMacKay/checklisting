@@ -29,6 +29,11 @@ COOKIES_ENABLED = True
 # not adversely affect performance.
 CONCURRENT_REQUESTS = 1
 
+EXTENSIONS = {
+    'checklisting.extensions.SpiderStatusReport': 600,
+    'checklisting.extensions.ErrorLogger': 600,
+}
+
 # Define a shared directory for crawler downloads. The crawlers use the name
 # of the source in file names so checklists from different sources will not
 # overwrite each other. Here checklists are written to python's tmp directory,
@@ -38,12 +43,6 @@ CHECKLISTING_DOWNLOAD_DIR = os.path.join(tempfile.gettempdir(), 'checklisting')
 # The list of email addresses where status reports are sent. Be sure to also
 # set the values for the SMTP server used to send the email message.
 CHECKLISTING_STATUS_REPORT_RECIPIENTS = []
-
-
-EXTENSIONS = {
-    'checklisting.extensions.SpiderStatusReport': 600,
-    'checklisting.extensions.ErrorLogger': 600,
-}
 
 
 #
@@ -72,10 +71,11 @@ WORLDBIRDS_DURATION = 7
 # Settings for tests
 #
 
-# A list of the spiders and arguments used to initialize them. See
-# local_settings.py-example for more details.
-CHECKLISTING_DOWNLOADS_TEST = []
-
+# A list of the spiders and arguments used to initialize them that are used
+# in the sites tests to verify the crawlers are working and the data are being
+# parsed correctly to create the checklists. See the file, local_settings.py
+# in the root project directory for more details.
+CHECKLISTING_SITES_TEST = []
 
 #
 # Override settings with local values

@@ -128,7 +128,7 @@ class ChecklistParserTestCase(TestCase):
 
     def test_checklist_identifier(self):
         """Verify the checklist identifier is extracted."""
-        self.assertEqual(1, self.parser.get_checklist()['identifier'])
+        self.assertEqual('1', self.parser.get_checklist()['identifier'])
 
     def test_checklist_source(self):
         """Verify the checklist source is extracted."""
