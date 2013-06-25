@@ -14,6 +14,8 @@ from scrapy import log
 from scrapy.spider import BaseSpider
 from scrapy.selector import HtmlXPathSelector
 
+from checklisting.spiders import CHECKLIST_FILE_FORMAT_VERSION, \
+    CHECKLIST_FILE_LANGUAGE
 from checklisting.exceptions import LoginException
 from checklisting.spiders.utils import save_json_data
 
@@ -125,7 +127,9 @@ class ChecklistParser(object):
         hour, minute = rows[3].split('-')[0].strip().split(':')
 
         return {
-            'identifier': self.identifier,
+            'version': CHECKLIST_FILE_FORMAT_VERSION,
+            'language': CHECKLIST_FILE_LANGUAGE,
+            'identifier': str(self.identifier),
             'source': 'WorldBirds',
             'url': self.url,
             'date': "%s-%s-%s" % (year, month, day),

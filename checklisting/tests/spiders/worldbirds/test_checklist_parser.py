@@ -2,6 +2,8 @@
 
 from unittest import TestCase
 
+from checklisting.spiders import CHECKLIST_FILE_FORMAT_VERSION, \
+    CHECKLIST_FILE_LANGUAGE
 from checklisting.spiders.worldbirds_spider import ChecklistParser
 from checklisting.tests.utils import response_for_content
 
@@ -113,6 +115,16 @@ class ChecklistParserTestCase(TestCase):
         </div>
         """, 'utf-8', metadata={'identifiers': (1, 2, 3)})
         self.parser = ChecklistParser(self.response)
+
+    def test_checklist_version(self):
+        """Verify the version number for the checklist format is defined."""
+        self.assertEqual(CHECKLIST_FILE_FORMAT_VERSION,
+                         self.parser.get_checklist()['version'])
+
+    def test_checklist_language(self):
+        """Verify the language used for the checklist format is defined."""
+        self.assertEqual(CHECKLIST_FILE_LANGUAGE,
+                         self.parser.get_checklist()['language'])
 
     def test_checklist_identifier(self):
         """Verify the checklist identifier is extracted."""

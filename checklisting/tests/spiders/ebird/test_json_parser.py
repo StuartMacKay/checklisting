@@ -2,6 +2,8 @@
 
 from unittest import TestCase
 
+from checklisting.spiders import CHECKLIST_FILE_FORMAT_VERSION, \
+    CHECKLIST_FILE_LANGUAGE
 from checklisting.spiders.ebird_spider import JSONParser
 from checklisting.tests.utils import response_for_data
 
@@ -132,6 +134,8 @@ class JSONParserTestCase(TestCase):
         del actual['location']
 
         expected = {
+            'version': CHECKLIST_FILE_FORMAT_VERSION,
+            'language': CHECKLIST_FILE_LANGUAGE,
             'identifier': 'S0000001',
             'date': '2013-03-27',
             'time': '09:00',

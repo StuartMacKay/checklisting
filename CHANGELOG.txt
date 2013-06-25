@@ -1,3 +1,11 @@
+Version 0.1a4
+-------------
+
+  * Replaced separate settings for the directory to download checklist to by
+    a single setting, CHECKLISTING_DOWNLOADS_DIR that is used by all spiders.
+  * Added version and language attributes to the JSON format files containing
+    the downloaded checklist.
+    
 Version 0.1a3
 -------------
 
