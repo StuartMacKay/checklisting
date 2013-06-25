@@ -239,7 +239,7 @@ class ChecklistParser(object):
         """
         columns = row.select('./td/text()').extract()
         return {
-            'standard_name': columns[0].strip(),
+            'name': columns[0].strip(),
         }
 
 

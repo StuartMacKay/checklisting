@@ -163,8 +163,7 @@ class JSONParserTestCase(TestCase):
         """Verify the species fields are extracted from the record."""
         actual = self.parser.get_species(self.data[0])
         expected = {
-            'standard_name': 'Common Name',
-            'common_name_en': 'Common Name',
+            'name': 'Common Name',
             'scientific_name': 'Scientific Name',
         }
         self.assertEqual(expected, actual)
@@ -175,8 +174,7 @@ class JSONParserTestCase(TestCase):
         expected = {
             'identifier': 'OBS0000001',
             'species': {
-                'standard_name': 'Common Name',
-                'common_name_en': 'Common Name',
+                'name': 'Common Name',
                 'scientific_name': 'Scientific Name',
             },
             'count': 1,

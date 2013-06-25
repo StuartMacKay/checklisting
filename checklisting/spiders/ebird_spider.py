@@ -144,8 +144,7 @@ class JSONParser(object):
             dict: a dictionary containing the fields for a species.
         """
         return {
-            'standard_name': record['comName'],
-            'common_name_en': record['comName'],
+            'name': record['comName'],
             'scientific_name': record['sciName'],
         }
 

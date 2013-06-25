@@ -8,6 +8,7 @@ Version 0.1a4
   * Checklist files now contain ints and floats for numbers and coordinates.
   * Protocols are defined using a name rather than a pre-defined code. This
     avoids making assumptions on where and how the data will be loaded.
+  * Species records now contain only two fields: name and scientific_name.
 
 Version 0.1a3
 -------------
