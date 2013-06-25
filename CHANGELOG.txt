@@ -5,7 +5,8 @@ Version 0.1a4
     a single setting, CHECKLISTING_DOWNLOADS_DIR that is used by all spiders.
   * Added version and language attributes to the JSON format files containing
     the downloaded checklist.
-    
+  * Checklist files now contain ints and floats for numbers and coordinates.
+
 Version 0.1a3
 -------------
 

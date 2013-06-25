@@ -179,21 +179,21 @@ class ChecklistParserTestCase(TestCase):
         expected = [
             {
                 'identifier': '1000',
-                'species': { 'standard_name': 'Species A', },
-                'count': '10',
-                'comment': 'notes',
+                'species': { 'name': 'Species A', },
+                'count': 10,
+                'comment_en': 'notes',
             },
             {
                 'identifier': '1001',
-                'species': { 'standard_name': 'Species B', },
-                'count': '2',
-                'comment': '',
+                'species': { 'name': 'Species B', },
+                'count': 2,
+                'comment_en': '',
             },
             {
                 'identifier': '1002',
-                'species': { 'standard_name': 'Species C', },
-                'count': '0',
-                'comment': '',
+                'species': { 'name': 'Species C', },
+                'count': 0,
+                'comment_en': '',
             }
         ]
         self.assertEqual(expected, self.parser.get_entries())

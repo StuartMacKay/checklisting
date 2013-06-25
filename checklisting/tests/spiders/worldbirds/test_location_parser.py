@@ -61,8 +61,8 @@ class LocationParserTestCase(TestCase):
 
     def test_location_latitude(self):
         """Verify the latitude is extracted."""
-        self.assertEqual('45.0000', self.location['lat'])
+        self.assertEqual(45.0, self.location['lat'])
 
     def test_location_latitude(self):
         """Verify the longitude is extracted."""
-        self.assertEqual('-45.0000', self.location['lng'])
+        self.assertEqual(-45.0, self.location['lon'])

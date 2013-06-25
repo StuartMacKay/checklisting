@@ -212,9 +212,9 @@ class ChecklistParser(object):
         # is returned.
 
         if len(columns) == 4:
-            count = '0'
+            count = 0
         else:
-            count = columns[1].strip()
+            count = int(columns[1].strip())
 
         return {
             'identifier': '',
@@ -270,9 +270,9 @@ class LocationParser(object):
         rows = self.docroot.select(xpath).extract()
         location = self.checklist['location']
         location['country'] = rows[1].strip()
-        location['comment'] = rows[5].strip()
-        location['lat'] = rows[2].split(',')[0].strip()
-        location['lng'] = rows[2].split(',')[1].strip()
+        location['comment_en'] = rows[5].strip()
+        location['lat'] = float(rows[2].split(',')[0].strip())
+        location['lon'] = float(rows[2].split(',')[1].strip())
         return self.checklist
 
 

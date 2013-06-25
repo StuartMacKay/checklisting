@@ -131,7 +131,7 @@ class JSONParser(object):
         return {
             'identifier': record['obsID'],
             'species': self.get_species(record),
-            'count': record.get('howMany', '0'),
+            'count': record.get('howMany', 0),
         }
 
     def get_species(self, record):

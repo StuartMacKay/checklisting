@@ -21,8 +21,8 @@ class JSONParserTestCase(TestCase):
             'firstName': 'Name',
             'howMany': 1,
             'lastName': 'Surname',
-            'lat': 45.000000,
-            'lng': -45.000000,
+            'lat': 45.000001,
+            'lng': -45.000001,
             'locID': 'L0000001',
             'locName': 'Location 1',
             'locationPrivate': True,
@@ -154,8 +154,8 @@ class JSONParserTestCase(TestCase):
             'county': 'County',
             'region': 'Region',
             'country': 'Country',
-            'lat': 45.000000,
-            'lon': -45.000000,
+            'lat': 45.000001,
+            'lon': -45.000001,
         }
         self.assertEqual(expected, actual)
 
