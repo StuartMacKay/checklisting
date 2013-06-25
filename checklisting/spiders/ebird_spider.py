@@ -159,16 +159,6 @@ class HTMLParser(object):
     dictionary which contains a breakdown of the count based on age and sex.
     """
 
-    protocol_codes = {
-        'Traveling': 'TRV',
-        'Stationary': 'STA',
-        'Incidental': 'INC',
-        'Area': 'ARE',
-        'Random': 'RND',
-        'Nocturnal Flight Call Count': 'NFC',
-        'None': 'NON'
-    }
-
     def __init__(self, response):
         """Initialize the parser with an HTML encoded response.
 
@@ -221,8 +211,7 @@ class HTMLParser(object):
             dict: a dictionary containing the fields describing the protocol
                 used to count the birds recorded in the checklist.
         """
-        protocol_key = self.attributes.get('Protocol:', None)
-        protocol_code = self.protocol_codes.get(protocol_key, 'NON')
+        protocol_name = self.attributes.get('Protocol:', None)
 
         duration_str = self.attributes.get('Duration:', '')
         if 'hour' in duration_str:
@@ -245,7 +234,7 @@ class HTMLParser(object):
                 r'([\.\d]+) m', distance_str).group(1)) * 1609)
 
         return {
-            'type': protocol_code,
+            'name': protocol_name,
             'duration_hours': duration_hours,
             'duration_minutes': duration_minutes,
             'distance': distance,

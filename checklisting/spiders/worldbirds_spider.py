@@ -170,7 +170,7 @@ class ChecklistParser(object):
         end_time = int(end_hour) * 60 + int(end_minute)
 
         return {
-            'type': 'TIM',
+            'name': 'Timed visit',
             'duration_hours': (end_time - start_time) / 60,
             'duration_minutes': (end_time - start_time) % 60,
         }

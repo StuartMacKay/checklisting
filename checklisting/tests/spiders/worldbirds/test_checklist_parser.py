@@ -159,8 +159,8 @@ class ChecklistParserTestCase(TestCase):
         self.assertEqual('Location A', self.parser.get_location()['name'])
 
     def test_protocol_type(self):
-        """Verify the protocol type is extracted."""
-        self.assertEqual('TIM', self.parser.get_protocol()['type'])
+        """Verify the protocol name is extracted."""
+        self.assertEqual('Timed visit', self.parser.get_protocol()['name'])
 
     def test_protocol_duration_hours(self):
         """Verify the duration hours of the visit is extracted."""

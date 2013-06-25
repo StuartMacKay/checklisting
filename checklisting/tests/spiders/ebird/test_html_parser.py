@@ -76,7 +76,7 @@ class ParseHTMLChecklistTestCase(TestCase):
     def test_get_protocol(self):
         """Verify the protocol can be extracted from the page."""
         expected = {
-            'type': 'TRV',
+            'name': 'Traveling',
             'duration_hours': 2,
             'duration_minutes': 35,
             'distance': 2000,
