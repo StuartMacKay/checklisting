@@ -45,7 +45,11 @@ class LocationParserTestCase(TestCase):
           <td colspan="2"><br><a target="_parent" href="locationreport.php?id=1&amp;so=3">Run Location Report</a></td>
         </tr>
         <tr>
-          <td width="5%"><br><a onclick="doGoogleLocation(1)" href="#"><img src="images/theme_blue/map.gif"></a></td>
+          <td width="5%"><br>
+            <a onclick="doGoogleLocation(1)" href="#">
+              <img src="images/theme_blue/map.gif">
+            </a>
+          </td>
           <td><br><a onclick="doGoogleLocation(1)" href="#">Google</a></td>
           <td>&nbsp;</td>
         </tr>

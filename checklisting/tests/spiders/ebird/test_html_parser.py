@@ -58,9 +58,10 @@ class ParseHTMLChecklistTestCase(TestCase):
             </div>
         </div>
         """
-        self.content = response_for_content(self.content, 'utf-8', url=self.url)
+        self.content = response_for_content(self.content, 'utf-8',
+                                            url=self.url)
         self.parser = HTMLParser(self.content)
-        
+
     def test_get_attributes(self):
         """Verify all the attributes for a checklist can be extracted."""
         expected = {
@@ -153,7 +154,8 @@ class ParseHTMLEntryTestCase(TestCase):
             </td>
         </tr>
         """
-        self.content = response_for_content(self.content, 'utf-8', url=self.url)
+        self.content = response_for_content(self.content, 'utf-8',
+                                            url=self.url)
         self.parser = HTMLParser(self.content)
 
     def test_extract_detail(self):

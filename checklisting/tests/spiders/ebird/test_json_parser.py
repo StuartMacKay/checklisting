@@ -37,7 +37,7 @@ class JSONParserTestCase(TestCase):
             'subnational1Name': 'Region',
             'subnational2Code': 'SN-02',
             'subnational2Name': 'County',
-        },{
+        }, {
             'checklistID': 'CL00002',
             'comName': 'Common Name',
             'countryCode': 'CC',
@@ -61,7 +61,7 @@ class JSONParserTestCase(TestCase):
             'subnational1Name': 'Region',
             'subnational2Code': 'SN-02',
             'subnational2Name': 'County',
-        },{
+        }, {
             'checklistID': 'CL00002',
             'comName': 'Common Name',
             'countryCode': 'CC',
@@ -120,9 +120,12 @@ class JSONParserTestCase(TestCase):
     def test_entry_ids(self):
         """Verify the ids of each checklist entry."""
         checklists = self.parser.get_checklists()
-        self.assertEqual('OBS0000001', checklists[0]['entries'][0]['identifier'])
-        self.assertEqual('OBS0000002', checklists[1]['entries'][0]['identifier'])
-        self.assertEqual('OBS0000003', checklists[1]['entries'][1]['identifier'])
+        self.assertEqual('OBS0000001',
+                         checklists[0]['entries'][0]['identifier'])
+        self.assertEqual('OBS0000002',
+                         checklists[1]['entries'][0]['identifier'])
+        self.assertEqual('OBS0000003',
+                         checklists[1]['entries'][1]['identifier'])
 
     def test_get_checklist(self):
         """Verify the complete checklist is extracted from the record.

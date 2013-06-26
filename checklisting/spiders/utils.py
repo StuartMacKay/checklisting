@@ -1,7 +1,6 @@
 """Utility functions used by crawlers to parse content."""
 
 import json
-import os
 import re
 
 

@@ -74,4 +74,3 @@ class ValidationTestCase(TestCase):
         if len(obj) != len(obj.strip()):
             standardMsg = '%s contains leading or trailing whitespace'
             self.fail(self._formatMessage(msg, standardMsg))
-

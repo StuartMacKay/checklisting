@@ -32,8 +32,8 @@ class MergeChecklistsTestCase(TestCase):
                 'county': 'County',
                 'region': 'Region',
                 'country': 'Country',
-                'lat': 45.000000,
-                'lon': -45.000000,
+                'lat': 45.0,
+                'lon': -45.0,
             },
             'entries': [
                 {
@@ -50,7 +50,7 @@ class MergeChecklistsTestCase(TestCase):
             'observers': [],
             'observer_count': 1,
             'protocol': {
-                'type': 'TRV',
+                'name': 'Traveling',
                 'duration_hours': 2,
                 'duration_minutes': 35,
                 'distance': 2000,
@@ -83,7 +83,7 @@ class MergeChecklistsTestCase(TestCase):
         """Verify the protocol is set."""
         self.fixture = self.spider.merge_checklists(self.lista, self.listb)
         expected = {
-            'type': 'TRV',
+            'name': 'Traveling',
             'duration_hours': 2,
             'duration_minutes': 35,
             'distance': 2000,

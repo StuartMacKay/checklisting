@@ -136,7 +136,8 @@ class ChecklistParserTestCase(TestCase):
 
     def test_checklist_url(self):
         """Verify the checklist url is extracted."""
-        self.assertEqual('http://example.com', self.parser.get_checklist()['url'])
+        self.assertEqual('http://example.com',
+                         self.parser.get_checklist()['url'])
 
     def test_checklist_date(self):
         """Verify the checklist date is extracted."""
@@ -148,7 +149,8 @@ class ChecklistParserTestCase(TestCase):
 
     def test_checklist_observers(self):
         """Verify the list of observers is extracted."""
-        self.assertEqual(['Observer A', 'Observer B'], self.parser.get_checklist()['observers'])
+        self.assertEqual(['Observer A', 'Observer B'],
+                         self.parser.get_checklist()['observers'])
 
     def test_checklist_observer_count(self):
         """Verify the number of observers is extracted."""
@@ -176,24 +178,20 @@ class ChecklistParserTestCase(TestCase):
 
     def test_entries(self):
         """Verify the entries."""
-        expected = [
-            {
-                'identifier': '1000',
-                'species': { 'name': 'Species A', },
-                'count': 10,
-                'comment_en': 'notes',
-            },
-            {
-                'identifier': '1001',
-                'species': { 'name': 'Species B', },
-                'count': 2,
-                'comment_en': '',
-            },
-            {
-                'identifier': '1002',
-                'species': { 'name': 'Species C', },
-                'count': 0,
-                'comment_en': '',
-            }
-        ]
+        expected = [{
+            'identifier': '1000',
+            'species': {'name': 'Species A'},
+            'count': 10,
+            'comment_en': 'notes',
+        }, {
+            'identifier': '1001',
+            'species': {'name': 'Species B'},
+            'count': 2,
+            'comment_en': '',
+        }, {
+            'identifier': '1002',
+            'species': {'name': 'Species C'},
+            'count': 0,
+            'comment_en': '',
+        }]
         self.assertEqual(expected, self.parser.get_entries())
