@@ -336,18 +336,19 @@ class HTMLParser(object):
                 the breakdown of the checklist entry count by age and sex.
         """
         details = []
-        for selector in node.select('.//div[@class="sd-data-age-sex"]//tr'):
+
+        xpath = './/div[@class="sd-data-age-sex"]//tr'
+        names = node.select(xpath).select('./th/text()').extract()
+
+        for selector in node.select(xpath):
             ages = selector.select('./td')
 
             if not ages:
                 continue
 
-            sex = ages[0].select('./text()').extract()[0][0].upper()
+            sex = ages[0].select('./text()').extract()[0]
 
-            if sex != 'M' and sex != 'F':
-                sex = 'X'
-
-            for index, age in zip(range(1, 5), ['JUV', 'IMM', 'AD', '']):
+            for index, age in zip(range(1, 5), names):
                 values = ages[index].select('./text()').extract()
                 if values:
                     details.append({
