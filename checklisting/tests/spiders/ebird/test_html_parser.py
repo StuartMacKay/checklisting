@@ -158,6 +158,14 @@ class ParseHTMLEntryTestCase(TestCase):
                                             url=self.url)
         self.parser = HTMLParser(self.content)
 
+    def test_extract_species(self):
+        """Verify the common name is extracted."""
+        expected = {
+            'name': 'Mallard',
+        }
+        actual = self.parser.get_entries()[0]['species']
+        self.assertEqual(expected, actual)
+
     def test_extract_detail(self):
         """Verify the age and sex can be extracted for an entry."""
         expected = [

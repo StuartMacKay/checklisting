@@ -280,18 +280,9 @@ class HTMLParser(object):
             count = selector.select(
                 './/h5[@class="se-count"]/text()').extract()[0].strip()
 
-            if '(' in name:
-                species = {
-                    'name': name.split('(')[0].strip(),
-                }
-                subspecies = {
-                    'name': name,
-                }
-            else:
-                species = {
-                    'name': name,
-                }
-                subspecies = {}
+            species = {
+                'name': name,
+            }
 
             try:
                 count = int(count)
@@ -300,7 +291,6 @@ class HTMLParser(object):
 
             entries.append({
                 'species': species,
-                'subspecies': subspecies,
                 'count': count,
                 'details': self.get_entry_details(selector),
                 'comment': self.get_entry_comment(selector),

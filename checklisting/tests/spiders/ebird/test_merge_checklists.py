@@ -40,7 +40,6 @@ class MergeChecklistsTestCase(TestCase):
                     'identifier': 'OBS0000001',
                     'species': {
                         'name': 'Common Name',
-                        'scientific_name': 'Scientific Name',
                     },
                     'count': 23
                 }
@@ -60,7 +59,6 @@ class MergeChecklistsTestCase(TestCase):
                 {
                     'species': {
                         'name': 'Common Name',
-                        'scientific_name': 'Scientific Name',
                     },
                     'count': 23,
                     'details': [
@@ -106,7 +104,6 @@ class MergeChecklistsTestCase(TestCase):
         self.listb['entries'].append({
             'species': {
                 'name': 'New Name',
-                'scientific_name': 'New Scientific Name',
             },
             'count': 10,
             'details': []
