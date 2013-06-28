@@ -19,6 +19,8 @@ class MergeChecklistsTestCase(TestCase):
         self.spider = ebird_spider.EBirdSpider('REG')
         self.spider.set_crawler(crawler)
         self.lista = {
+            'version': 1,
+            'language': 'en',
             'identifier': 'S0000001',
             'date': '2013-03-27',
             'time': '09:00',
@@ -46,6 +48,10 @@ class MergeChecklistsTestCase(TestCase):
             ]
         }
         self.listb = {
+            'version': 1,
+            'language': 'en',
+            'source': 'ebird',
+            'url': 'http://ebird.org/',
             'observers': [],
             'observer_count': 1,
             'protocol': {
@@ -111,15 +117,141 @@ class MergeChecklistsTestCase(TestCase):
         self.fixture = self.spider.merge_checklists(self.lista, self.listb)
         self.assertEqual(2, len(self.fixture['entries']))
 
-    def test_entry_overwritten(self):
-        """Verify entries in the second list overwrite those from the first."""
-        self.listb['entries'].append({
+
+class MergeEntriesTestCase(TestCase):
+    """Verify merging the entries from JSON and HTML checklists together."""
+
+    def setUp(self):
+        """Initialize the test."""
+        crawler = Crawler(CrawlerSettings(settings))
+        crawler.configure()
+        self.spider = ebird_spider.EBirdSpider('REG')
+        self.spider.set_crawler(crawler)
+
+    def test_species_updated(self):
+        """Verify the species is updated when only a single record exists."""
+        lista = [{
+            'identifier': 'OBS1',
             'species': {
-                'name': 'Common Name',
-                'scientific_name': 'Scientific Name',
+                'name': 'Barn Swallow',
             },
-            'count': 10,
-            'details': []
-        })
-        self.fixture = self.spider.merge_checklists(self.lista, self.listb)
-        self.assertEqual(10, self.fixture['entries'][0]['count'])
+            'count': 1
+        }]
+        listb = [{
+            'species': {
+                'name': 'Barn Swallow (White-bellied)',
+            },
+            'count': 1,
+        }]
+        entries, warnings = self.spider.merge_entries(lista, listb)
+        self.assertEqual('Barn Swallow (White-bellied)',
+                         entries[0]['species']['name'])
+
+    def test_species_updated_without_warnings(self):
+        """Verify no warnings are generated when an entry is updated."""
+        lista = [{
+            'identifier': 'OBS1',
+            'species': {
+                'name': 'Barn Swallow',
+            },
+            'count': 1
+        }]
+        listb = [{
+            'species': {
+                'name': 'Barn Swallow (White-bellied)',
+            },
+            'count': 1,
+        }]
+        entries, warnings = self.spider.merge_entries(lista, listb)
+        self.assertFalse(warnings)
+
+
+    def test_species_not_updated(self):
+        """Verify the species is not updated when multiple records exist."""
+        lista = [{
+            'identifier': 'OBS1',
+            'species': {
+                'name': 'Barn Swallow',
+            },
+            'count': 1
+        }, {
+            'identifier': 'OBS2',
+            'species': {
+                'name': 'Barn Swallow',
+            },
+            'count': 1
+        }]
+        listb = [{
+            'species': {
+                'name': 'Barn Swallow (White-bellied)',
+            },
+            'count': 1,
+        }]
+
+        entries, warnings = self.spider.merge_entries(lista, listb)
+        actual = [entry['species']['name'] for entry in entries]
+        expected = [entry['species']['name'] for entry in lista]
+        self.assertEqual(expected, actual)
+
+    def test_no_update_warning(self):
+        """Verify a warning is updated when multiple entries match."""
+        lista = [{
+            'identifier': 'OBS1',
+            'species': {
+                'name': 'Barn Swallow',
+            },
+            'count': 1
+        }, {
+            'identifier': 'OBS2',
+            'species': {
+                'name': 'Barn Swallow',
+            },
+            'count': 1
+        }]
+        listb = [{
+            'species': {
+                'name': 'Barn Swallow (White-bellied)',
+            },
+            'count': 1,
+        }]
+
+        entries, warnings = self.spider.merge_entries(lista, listb)
+        self.assertTrue("Could not update entry" in warnings[0])
+
+    def test_missing_record_added(self):
+        """Verify records that exist only on the web page are added."""
+        lista = [{
+            'identifier': 'OBS1',
+            'species': {
+                'name': 'Barn Swallow',
+            },
+            'count': 1
+        }]
+        listb = [{
+            'species': {
+                'name': 'Barn Swallow (White-bellied)',
+            },
+            'count': 2,
+        }]
+        entries, warnings = self.spider.merge_entries(lista, listb)
+        actual = [entry['species']['name'] for entry in entries]
+        expected = ['Barn Swallow', 'Barn Swallow (White-bellied)']
+        self.assertEqual(expected, actual)
+
+    def test_added_record_warning(self):
+        """Verify a warning is generated when a new entry is added."""
+        lista = [{
+            'identifier': 'OBS1',
+            'species': {
+                'name': 'Barn Swallow',
+            },
+            'count': 1
+        }]
+        listb = [{
+            'species': {
+                'name': 'Barn Swallow (White-bellied)',
+            },
+            'count': 2,
+        }]
+        entries, warnings = self.spider.merge_entries(lista, listb)
+        self.assertTrue('Added' in warnings[0])

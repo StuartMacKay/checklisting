@@ -411,6 +411,7 @@ class EBirdSpider(BaseSpider):
 
         self.checklists = []
         self.errors = []
+        self.warnings = []
 
     def start_requests(self):
         """Configure the spider and issue the first request to the eBird API.
@@ -520,28 +521,121 @@ class EBirdSpider(BaseSpider):
            update (dict): the checklist extracted from the web page.
 
         Returns:
-           dict: a deep copy of the JSON checklist updated with values from
-               the checklist obtained from the web page.
+           dict: an updated checklist containing values from the first
+              (original) updated with values from the second (update).
         """
-        result = copy.deepcopy(original)
 
-        result['observers'] = original['observers'] + update['observers']
-        result['observer_count'] = update['observer_count']
-        result['protocol'] = update['protocol']
+        entries, warnings = self.merge_entries(
+            original['entries'], update['entries'])
 
-        entries = {entry['species']['name']: entry
-                   for entry in result['entries']}
+        checklist = {
+            'version': original['version'],
+            'language': original['language'],
+            'identifier': original['identifier'],
+            'date': original['date'],
+            'time': original['time'],
+            'source': original['source'],
+            'observers': original['observers'] + update['observers'],
+            'observer_count': update['observer_count'],
+            'submitted_by': original['submitted_by'],
+            'location': original['location'],
+            'protocol': update['protocol'],
+            'entries': entries,
+        }
 
-        for entry in update['entries']:
-            key = entry['species']['name']
-            if key in entries:
-                entries[key].update(entry)
+        if warnings:
+            self.warnings.append((checklist, warnings))
+
+        return checklist
+
+
+    def merge_entries(self, originals, updates):
+        """Merge two lists of entries together.
+
+        Args:
+           originals (list): the entries extracted from the API JSON data.
+           updates (list): the entries extracted from the web page.
+
+        Returns:
+           tuple(list, list): a tuple containing the complete (deep) copy of
+               the entries merged together and a list of any warnings generated
+               when merging the lists together.
+
+        IMPORTANT: The records from the API contain only the species name.
+        The subspecies name is discarded. That means if there are two records
+        for a species with the same count. It won't be possible to determine
+        which record to update when the lists are merged. In this case the
+        records will not be merged and only the records from the API will be
+        included in the merged list.
+        """
+
+        merged = []
+        warnings = []
+
+        for entry in originals:
+            merged.append({
+                'identifier': entry['identifier'],
+                'species': entry['species'].copy(),
+                'count': entry['count'],
+            })
+
+        index = {}
+
+        for entry in merged:
+            key = entry['species']['name'].split('(')[0].strip()
+            if key in index:
+                index[key][entry['count']].append(entry)
             else:
-                entries[key] = entry
+                index[key] = {entry['count']: [entry]}
 
-        result['entries'] = entries.values()
+        for name, counts in index.items():
+            for count, entries in counts.items():
+                if len(entries) > 1:
+                    warnings.append(
+                        "Could not update entry. There are %s entries that"
+                        " match: species=%s; count=%d." % (
+                            len(entries), name, count))
 
-        return result
+        for entry in updates:
+            key = entry['species']['name'].split('(')[0].strip()
+            count = entry['count']
+            target = None
+            added = False
+
+            if key in index:
+                if count in index[key]:
+                    hits = len(index[key][count])
+                else:
+                    hits = 0
+
+                if hits == 0:
+                    target = {}
+                    merged.append(target)
+                    added = True
+                elif hits == 1:
+                    target = index[key][count][0]
+            else:
+                target = {}
+                merged.append(target)
+                added = True
+
+            if target is not None:
+                target['species'] = entry['species'].copy()
+                target['count'] = entry['count']
+
+                if 'comment' in entry:
+                    target['comment'] = entry['comment']
+
+                if 'details' in entry:
+                    target['details'] = []
+                    for detail in entry['details']:
+                        target['details'].append(detail.copy())
+
+            if added:
+                warnings.append("Added new entry: species=%s; count=%d." % (
+                    entry['species']['name'], entry['count']))
+
+        return merged, warnings
 
     def save_checklist(self, checklist):
         """Save the checklist in JSON format.
