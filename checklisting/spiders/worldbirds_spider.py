@@ -135,7 +135,6 @@ class ChecklistParser(object):
             'source': 'WorldBirds',
             'url': self.url,
             'date': "%s-%s-%s" % (year, month, day),
-            'time': "%s:%s" % (hour, minute),
             'location': self.get_location(),
             'protocol': self.get_protocol(),
             'observers': [name.strip() for name in rows[-2].split(',')],
@@ -173,6 +172,7 @@ class ChecklistParser(object):
 
         return {
             'name': 'Timed visit',
+            'time': '%s:%s' % (start_hour, start_minute),
             'duration_hours': (end_time - start_time) / 60,
             'duration_minutes': (end_time - start_time) % 60,
         }

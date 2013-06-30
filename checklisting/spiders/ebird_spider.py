@@ -76,12 +76,7 @@ class JSONParser(object):
         first_name = record['firstName'].strip()
         last_name = record['lastName'].strip()
 
-        if ' ' in record['obsDt']:
-            time = record['obsDt'].strip().split(' ')[1]
-        else:
-            time = '12:00:00'
-
-        return {
+        checklist = {
             'meta': {
                 'version': CHECKLIST_FILE_FORMAT_VERSION,
                 'language': CHECKLIST_FILE_LANGUAGE,
@@ -89,11 +84,17 @@ class JSONParser(object):
             'identifier': record['subID'].strip(),
             'location': self.get_location(record),
             'date': record['obsDt'].strip().split(' ')[0],
-            'time': time,
             'submitted_by': first_name + ' ' + last_name,
             'observers': [first_name + ' ' + last_name],
             'source': 'eBird',
         }
+
+        if ' ' in record['obsDt']:
+            checklist['protocol'] = {
+                'time': record['obsDt'].strip().split(' ')[1],
+            }
+
+        return checklist
 
     def get_locations(self):
         """Get the set of locations from the observations.
@@ -537,15 +538,21 @@ class EBirdSpider(BaseSpider):
             },
             'identifier': original['identifier'],
             'date': original['date'],
-            'time': original['time'],
             'source': original['source'],
             'observers': original['observers'] + update['observers'],
             'observer_count': update['observer_count'],
             'submitted_by': original['submitted_by'],
             'location': original['location'],
-            'protocol': update['protocol'],
             'entries': entries,
         }
+
+        if 'protocol' in original:
+            protocol = original['protocol'].copy()
+            protocol.update(update['protocol'])
+        else:
+            protocol = update['protocol'].copy()
+            
+        checklist['protocol'] = protocol
 
         if warnings:
             self.warnings.append((checklist, warnings))

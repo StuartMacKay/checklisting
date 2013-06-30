@@ -25,7 +25,9 @@ class MergeChecklistsTestCase(TestCase):
             },
             'identifier': 'S0000001',
             'date': '2013-03-27',
-            'time': '09:00',
+            'protocol': {
+                'time': '09:00',
+            },
             'submitted_by': 'Name Surname',
             'observers': ['Name Surname'],
             'observer_count': 1,
@@ -92,6 +94,7 @@ class MergeChecklistsTestCase(TestCase):
         self.fixture = self.spider.merge_checklists(self.lista, self.listb)
         expected = {
             'name': 'Traveling',
+            'time': '09:00',
             'duration_hours': 2,
             'duration_minutes': 35,
             'distance': 2000,

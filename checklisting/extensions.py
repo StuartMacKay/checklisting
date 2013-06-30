@@ -85,9 +85,13 @@ Time: %(time)s
         if checklists:
             summary = []
             for checklist in checklists:
+                if 'protocol' in checklist:
+                    time = checklist['protocol']['time']
+                else:
+                    time = '--:--'
                 summary.append("%s %s, %s (%s)" % (
                     checklist['date'],
-                    checklist['time'],
+                    time,
                     self.remove_accents(checklist['location']['name']),
                     self.remove_accents(checklist['submitted_by'])
                 ))
@@ -112,9 +116,13 @@ Time: %(time)s
             summary = []
 
             for checklist, messages in warnings:
+                if 'protocol' in checklist:
+                    time = checklist['protocol']['time']
+                else:
+                    time = '--:--'
                 summary.append("%s %s, %s (%s)" % (
                     checklist['date'],
-                    checklist['time'],
+                    time,
                     self.remove_accents(checklist['location']['name']),
                     self.remove_accents(checklist['submitted_by'])
                 ))

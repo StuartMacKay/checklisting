@@ -26,7 +26,7 @@ class JSONParserTestCase(TestCase):
             'locID': 'L0000001',
             'locName': 'Location 1',
             'locationPrivate': True,
-            'obsDt': '2013-03-27 09:00',
+            'obsDt': '2013-03-27',
             'obsID': 'OBS0000001',
             'obsReviewed': False,
             'obsValid': True,
@@ -130,20 +130,21 @@ class JSONParserTestCase(TestCase):
     def test_get_checklist(self):
         """Verify the complete checklist is extracted from the record.
 
-        Only the top-level fields are checked. The location is removed
-        as the fields are covered in the test_get_location test.
+        Only the top-level fields are checked. The location and prootcol are
+        removed as the fields are covered in the test_get_location and
+        test_get_protocol tests respectively.
         """
-        actual = self.parser.get_checklist(self.data[0])
+        actual = self.parser.get_checklist(self.data[1])
         del actual['location']
+        del actual['protocol']
 
         expected = {
             'meta': {
                 'version': CHECKLIST_FILE_FORMAT_VERSION,
                 'language': CHECKLIST_FILE_LANGUAGE,
             },
-            'identifier': 'S0000001',
+            'identifier': 'S0000002',
             'date': '2013-03-27',
-            'time': '09:00',
             'submitted_by': 'Name Surname',
             'observers': ['Name Surname'],
             'source': 'eBird',
@@ -163,6 +164,11 @@ class JSONParserTestCase(TestCase):
             'lon': -45.000001,
         }
         self.assertEqual(expected, actual)
+
+    def test_protocol_not_set(self):
+        """Verify protocol is not included if not time is given."""
+        actual = self.parser.get_checklist(self.data[0])
+        self.assertFalse('protocol' in actual)
 
     def test_get_species(self):
         """Verify the species fields are extracted from the record."""

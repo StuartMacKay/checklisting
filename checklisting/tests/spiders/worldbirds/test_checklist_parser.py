@@ -145,7 +145,8 @@ class ChecklistParserTestCase(TestCase):
 
     def test_checklist_time(self):
         """Verify the checklist time is extracted."""
-        self.assertEqual('11:00', self.parser.get_checklist()['time'])
+        actual = self.parser.get_checklist()['protocol']['time']
+        self.assertEqual('11:00', actual)
 
     def test_checklist_observers(self):
         """Verify the list of observers is extracted."""
