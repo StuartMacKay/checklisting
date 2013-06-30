@@ -82,8 +82,10 @@ class JSONParser(object):
             time = '12:00:00'
 
         return {
-            'version': CHECKLIST_FILE_FORMAT_VERSION,
-            'language': CHECKLIST_FILE_LANGUAGE,
+            'meta': {
+                'version': CHECKLIST_FILE_FORMAT_VERSION,
+                'language': CHECKLIST_FILE_LANGUAGE,
+            },
             'identifier': record['subID'].strip(),
             'location': self.get_location(record),
             'date': record['obsDt'].strip().split(' ')[0],
@@ -529,8 +531,10 @@ class EBirdSpider(BaseSpider):
             original['entries'], update['entries'])
 
         checklist = {
-            'version': original['version'],
-            'language': original['language'],
+            'meta': {
+                'version': original['meta']['version'],
+                'language': original['meta']['language'],
+            },
             'identifier': original['identifier'],
             'date': original['date'],
             'time': original['time'],

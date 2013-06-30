@@ -127,8 +127,10 @@ class ChecklistParser(object):
         hour, minute = rows[3].split('-')[0].strip().split(':')
 
         return {
-            'version': CHECKLIST_FILE_FORMAT_VERSION,
-            'language': CHECKLIST_FILE_LANGUAGE,
+            'meta': {
+                'version': CHECKLIST_FILE_FORMAT_VERSION,
+                'language': CHECKLIST_FILE_LANGUAGE,
+            },
             'identifier': str(self.identifier),
             'source': 'WorldBirds',
             'url': self.url,

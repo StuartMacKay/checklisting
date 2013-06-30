@@ -137,8 +137,10 @@ class JSONParserTestCase(TestCase):
         del actual['location']
 
         expected = {
-            'version': CHECKLIST_FILE_FORMAT_VERSION,
-            'language': CHECKLIST_FILE_LANGUAGE,
+            'meta': {
+                'version': CHECKLIST_FILE_FORMAT_VERSION,
+                'language': CHECKLIST_FILE_LANGUAGE,
+            },
             'identifier': 'S0000001',
             'date': '2013-03-27',
             'time': '09:00',

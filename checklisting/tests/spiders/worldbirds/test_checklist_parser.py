@@ -119,12 +119,12 @@ class ChecklistParserTestCase(TestCase):
     def test_checklist_version(self):
         """Verify the version number for the checklist format is defined."""
         self.assertEqual(CHECKLIST_FILE_FORMAT_VERSION,
-                         self.parser.get_checklist()['version'])
+                         self.parser.get_checklist()['meta']['version'])
 
     def test_checklist_language(self):
         """Verify the language used for the checklist format is defined."""
         self.assertEqual(CHECKLIST_FILE_LANGUAGE,
-                         self.parser.get_checklist()['language'])
+                         self.parser.get_checklist()['meta']['language'])
 
     def test_checklist_identifier(self):
         """Verify the checklist identifier is extracted."""

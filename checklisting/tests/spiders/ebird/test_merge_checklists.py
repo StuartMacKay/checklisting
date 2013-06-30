@@ -19,8 +19,10 @@ class MergeChecklistsTestCase(TestCase):
         self.spider = ebird_spider.EBirdSpider('REG')
         self.spider.set_crawler(crawler)
         self.lista = {
-            'version': 1,
-            'language': 'en',
+            'meta': {
+                'version': 1,
+                'language': 'en',
+            },
             'identifier': 'S0000001',
             'date': '2013-03-27',
             'time': '09:00',
@@ -48,8 +50,10 @@ class MergeChecklistsTestCase(TestCase):
             ]
         }
         self.listb = {
-            'version': 1,
-            'language': 'en',
+            'meta': {
+                'version': 1,
+                'language': 'en',
+            },
             'source': 'ebird',
             'url': 'http://ebird.org/',
             'observers': [],
