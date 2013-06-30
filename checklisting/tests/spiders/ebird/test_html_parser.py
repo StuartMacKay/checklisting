@@ -58,9 +58,9 @@ class ParseHTMLChecklistTestCase(TestCase):
             </div>
         </div>
         """
-        self.content = response_for_content(self.content, 'utf-8',
-                                            url=self.url)
-        self.parser = HTMLParser(self.content)
+        self.response = response_for_content(self.content, 'utf-8',
+                                             url=self.url)
+        self.parser = HTMLParser(self.response)
 
     def test_get_attributes(self):
         """Verify all the attributes for a checklist can be extracted."""
@@ -85,6 +85,21 @@ class ParseHTMLChecklistTestCase(TestCase):
         }
         actual = self.parser.get_protocol()
         self.assertEqual(expected, actual)
+
+    def test_get_default_activity(self):
+        """Verify the activity is extracted from the page."""
+        self.assertEqual(self.parser.default_activity,
+                         self.parser.get_activity())
+
+    def test_get_activity_from_protocl(self):
+        """Verify the activity is extracted from the protocol name."""
+        protocol = self.parser.activities.keys()[0]
+        activity = self.parser.activities[protocol][0]
+        self.content = self.content.replace('Traveling', protocol)
+        self.response = response_for_content(self.content, 'utf-8',
+                                             url=self.url)
+        self.parser = HTMLParser(self.response)
+        self.assertEqual(activity, self.parser.get_activity())
 
 
 class ParseHTMLEntryTestCase(TestCase):

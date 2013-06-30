@@ -137,6 +137,7 @@ class ChecklistParser(object):
             'date': "%s-%s-%s" % (year, month, day),
             'location': self.get_location(),
             'protocol': self.get_protocol(),
+            'activity': rows[6].strip(),
             'observers': [name.strip() for name in rows[-2].split(',')],
             'observer_count': int(rows[5].strip()),
             'entries': self.get_entries()

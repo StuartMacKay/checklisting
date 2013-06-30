@@ -161,6 +161,19 @@ class HTMLParser(object):
     dictionary which contains a breakdown of the count based on age and sex.
     """
 
+    # eBird mixes up activities and protocols a bit so this table is used
+    # to map protocol names onto an activity and alternative protocol.
+    activities = {
+        'Nocturnal Flight Call Count':
+            ('Nocturnal Flight Call Count', 'Stationary'),
+        'Heron Area Count':
+            ('Heron Count', 'Area'),
+        'Heron Stationary Count':
+            ('Heron Count', 'Stationary'),
+    }
+
+    default_activity = 'Birding'
+
     def __init__(self, response):
         """Initialize the parser with an HTML encoded response.
 
@@ -202,6 +215,7 @@ class HTMLParser(object):
         return {
             'observer_count': self.get_observer_count(),
             'observers': self.get_observers(),
+            'activity': self.get_activity(),
             'protocol': self.get_protocol(),
             'entries': self.get_entries(),
         }
@@ -214,6 +228,9 @@ class HTMLParser(object):
                 used to count the birds recorded in the checklist.
         """
         protocol_name = self.attributes.get('Protocol:', None)
+
+        if protocol_name in self.activities:
+            protocol_name = self.activities[protocol_name][1]
 
         duration_str = self.attributes.get('Duration:', '')
         if 'hour' in duration_str:
@@ -242,6 +259,24 @@ class HTMLParser(object):
             'distance': distance,
             'area': 0,
         }
+
+    def get_activity(self):
+        """Get the activity used for the checklist.
+
+        Returns:
+            str: a name for the activity.
+
+        Uses the activities table to separate out specific activities from
+        the names eBird uses for protocols.
+        """
+        protocol_name = self.attributes.get('Protocol:', None)
+
+        if protocol_name in self.activities:
+            activity = self.activities[protocol_name][0]
+        else:
+            activity = self.default_activity
+
+        return activity
 
     def get_observers(self):
         """Get the additional observers.
@@ -542,6 +577,7 @@ class EBirdSpider(BaseSpider):
             'observers': original['observers'] + update['observers'],
             'observer_count': update['observer_count'],
             'submitted_by': original['submitted_by'],
+            'activity': update['activity'],
             'location': original['location'],
             'entries': entries,
         }
@@ -551,7 +587,7 @@ class EBirdSpider(BaseSpider):
             protocol.update(update['protocol'])
         else:
             protocol = update['protocol'].copy()
-            
+
         checklist['protocol'] = protocol
 
         if warnings:

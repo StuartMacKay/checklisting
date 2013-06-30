@@ -61,7 +61,7 @@ class ChecklistParserTestCase(TestCase):
         </tr>
         <tr>
           <td><label>Purpose</label></td>
-          <td></td><td></td>
+          <td>Birdwatching, with no specific purpose</td><td></td>
         </tr>
         <tr valign="top">
           <td><label>Other notes for the visit</label></td>
@@ -156,6 +156,11 @@ class ChecklistParserTestCase(TestCase):
     def test_checklist_observer_count(self):
         """Verify the number of observers is extracted."""
         self.assertEqual(1, self.parser.get_checklist()['observer_count'])
+
+    def test_activity(self):
+        """Verify the activity is extracted."""
+        self.assertEqual('Birdwatching, with no specific purpose',
+                         self.parser.get_checklist()['activity'])
 
     def test_location_name(self):
         """Verify the location name is extracted."""

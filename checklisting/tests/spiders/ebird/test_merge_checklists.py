@@ -60,6 +60,7 @@ class MergeChecklistsTestCase(TestCase):
             'url': 'http://ebird.org/',
             'observers': [],
             'observer_count': 1,
+            'activity': 'Birding',
             'protocol': {
                 'name': 'Traveling',
                 'duration_hours': 2,
@@ -88,6 +89,11 @@ class MergeChecklistsTestCase(TestCase):
         """Verify the number of observers is set."""
         self.fixture = self.spider.merge_checklists(self.lista, self.listb)
         self.assertEqual(1, self.fixture['observer_count'])
+
+    def test_activity(self):
+        """Verify the activity is included in the merged checklist."""
+        self.fixture = self.spider.merge_checklists(self.lista, self.listb)
+        self.assertTrue('activity' in self.fixture)
 
     def test_protocol(self):
         """Verify the protocol is set."""
