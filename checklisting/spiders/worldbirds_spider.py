@@ -112,6 +112,7 @@ class ChecklistParser(object):
         """
         self.docroot = HtmlXPathSelector(response)
         self.identifier = response.meta['identifiers'][0]
+        self.country = response.meta['country']
         self.url = response.url
 
     def get_checklist(self):
@@ -131,7 +132,7 @@ class ChecklistParser(object):
                 'version': CHECKLIST_FILE_FORMAT_VERSION,
                 'language': CHECKLIST_FILE_LANGUAGE,
             },
-            'identifier': str(self.identifier),
+            'identifier': self.country.upper() + str(self.identifier),
             'source': 'WorldBirds',
             'url': self.url,
             'date': "%s-%s-%s" % (year, month, day),
@@ -191,10 +192,11 @@ class ChecklistParser(object):
        """
         xpath = '(//table[@class="TableThin"])[1]/tr'
         rows = self.docroot.select(xpath)[1:]
+        prefix = self.country.upper() + str(self.identifier)
         entries = []
         for idx, row in enumerate(rows):
             entry = self.get_entry(row)
-            entry['identifier'] = str(self.identifier * 1000 + idx)
+            entry['identifier'] = prefix + "%03d" % idx
             entries.append(entry)
         return entries
 
@@ -262,6 +264,8 @@ class LocationParser(object):
         """
         self.docroot = HtmlXPathSelector(response)
         self.checklist = response.meta['checklist']
+        self.identifier = response.meta['identifiers'][1]
+        self.country = response.meta['country']
 
     def get_checklist(self):
         """Get the checklist updated with the location details.
@@ -272,6 +276,7 @@ class LocationParser(object):
         xpath = '(//table[@class="PopupTable"])[1]/tr/td/text()'
         rows = self.docroot.select(xpath).extract()
         location = self.checklist['location']
+        location['identifier'] = self.country.upper() + str(self.identifier)
         location['country'] = rows[1].strip()
         location['comment_en'] = rows[5].strip()
         location['lat'] = float(rows[2].split(',')[0].strip())
@@ -388,7 +393,7 @@ class WorldBirdsSpider(BaseSpider):
         if country.lower() not in self.databases:
             raise ValueError("Sorry, %s is one of the countries that is not"
                              " (yet) supported by this crawler.")
-
+        self.country = country
         self.start_url = self.databases[country.lower()]
         self.server = self.start_url.split('/')[2]
         self.log("Downloading checklists from %s" % self.server, log.INFO)
@@ -474,7 +479,8 @@ class WorldBirdsSpider(BaseSpider):
                 yield Request(
                     url=url % (self.server, values[1]),
                     callback=self.parse_checklist,
-                    meta={'identifiers': values[1:]}
+                    meta={'identifiers': values[1:],
+                          'country': self.country}
                 )
 
     def parse_checklist(self, response):
@@ -489,6 +495,7 @@ class WorldBirdsSpider(BaseSpider):
         """
         checklist = self.checklist_parser(response).get_checklist()
         ids = response.meta['identifiers']
+        country = response.meta['country']
 
         url = "http://%s/worldbirds/getdata.php?a=LocationDetails&id=%s"
 
@@ -496,7 +503,9 @@ class WorldBirdsSpider(BaseSpider):
             url=url % (self.server, ids[1]),
             callback=self.parse_location,
             dont_filter=True,
-            meta={'identifiers': ids, 'checklist': checklist}
+            meta={'identifiers': ids,
+                  'checklist': checklist,
+                  'country': country}
         )
 
     def parse_location(self, response):
@@ -519,7 +528,9 @@ class WorldBirdsSpider(BaseSpider):
             url=url % (self.server, ids[2]),
             callback=self.parse_observer,
             dont_filter=True,
-            meta={'identifiers': ids, 'checklist': parser.get_checklist()}
+            meta={'identifiers': ids,
+                  'checklist': parser.get_checklist(),
+                  'country': self.country}
         )
 
     def parse_observer(self, response):

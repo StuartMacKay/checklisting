@@ -1,5 +1,5 @@
 """Tests for parsing the WorldBirds page containing the checklist."""
-
+from datetime import datetime
 from unittest import TestCase
 
 from checklisting.spiders import CHECKLIST_FILE_FORMAT_VERSION, \
@@ -113,7 +113,7 @@ class ChecklistParserTestCase(TestCase):
         </div>
         </div>
         </div>
-        """, 'utf-8', metadata={'identifiers': (1, 2, 3)})
+        """, 'utf-8', metadata={'identifiers': (1, 2, 3), 'country': 'pt'})
         self.parser = ChecklistParser(self.response)
 
     def test_checklist_version(self):
@@ -128,7 +128,7 @@ class ChecklistParserTestCase(TestCase):
 
     def test_checklist_identifier(self):
         """Verify the checklist identifier is extracted."""
-        self.assertEqual('1', self.parser.get_checklist()['identifier'])
+        self.assertEqual('PT1', self.parser.get_checklist()['identifier'])
 
     def test_checklist_source(self):
         """Verify the checklist source is extracted."""
@@ -185,17 +185,17 @@ class ChecklistParserTestCase(TestCase):
     def test_entries(self):
         """Verify the entries."""
         expected = [{
-            'identifier': '1000',
+            'identifier': 'PT1000',
             'species': {'name': 'Species A'},
             'count': 10,
             'comment_en': 'notes',
         }, {
-            'identifier': '1001',
+            'identifier': 'PT1001',
             'species': {'name': 'Species B'},
             'count': 2,
             'comment_en': '',
         }, {
-            'identifier': '1002',
+            'identifier': 'PT1002',
             'species': {'name': 'Species C'},
             'count': 0,
             'comment_en': '',
