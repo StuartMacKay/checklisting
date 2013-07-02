@@ -137,6 +137,8 @@ class JSONParserTestCase(TestCase):
         actual = self.parser.get_checklist(self.data[1])
         del actual['location']
         del actual['protocol']
+        del actual['source']
+        del actual['observers']
 
         expected = {
             'meta': {
@@ -145,9 +147,6 @@ class JSONParserTestCase(TestCase):
             },
             'identifier': 'S0000002',
             'date': '2013-03-27',
-            'submitted_by': 'Name Surname',
-            'observers': ['Name Surname'],
-            'source': 'eBird',
         }
         self.assertEqual(expected, actual)
 
@@ -162,6 +161,33 @@ class JSONParserTestCase(TestCase):
             'country': 'Country',
             'lat': 45.000001,
             'lon': -45.000001,
+        }
+        self.assertEqual(expected, actual)
+
+    def test_get_observers(self):
+        """Verify the observer name is extracted from the record."""
+        actual = self.parser.get_observers(self.data[0])
+        expected = {
+            'count': 1,
+            'names': ['Name Surname'],
+        }
+        self.assertEqual(expected, actual)
+
+    def test_get_source(self):
+        """Verify the source fields are extracted from the record."""
+        actual = self.parser.get_source(self.data[0])
+        expected = {
+            'submitted_by': 'Name Surname',
+            'name': 'eBird',
+        }
+        self.assertEqual(expected, actual)
+
+    def test_get_protocol(self):
+        """Verify the protocol fields are extracted from the record."""
+        actual = self.parser.get_protocol(self.data[1])
+        expected = {
+            'name': 'Incidental',
+            'time': '10:00',
         }
         self.assertEqual(expected, actual)
 

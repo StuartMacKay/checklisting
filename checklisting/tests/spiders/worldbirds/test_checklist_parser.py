@@ -130,14 +130,15 @@ class ChecklistParserTestCase(TestCase):
         """Verify the checklist identifier is extracted."""
         self.assertEqual('PT1', self.parser.get_checklist()['identifier'])
 
-    def test_checklist_source(self):
-        """Verify the checklist source is extracted."""
-        self.assertEqual('WorldBirds', self.parser.get_checklist()['source'])
+    def test_source_name(self):
+        """Verify the name of the source is extracted."""
+        actual = self.parser.get_checklist()['source']['name']
+        self.assertEqual('WorldBirds', actual)
 
-    def test_checklist_url(self):
+    def test_source_url(self):
         """Verify the checklist url is extracted."""
-        self.assertEqual('http://example.com',
-                         self.parser.get_checklist()['url'])
+        actual = self.parser.get_checklist()['source']['url']
+        self.assertEqual('http://example.com', actual)
 
     def test_checklist_date(self):
         """Verify the checklist date is extracted."""
@@ -148,14 +149,14 @@ class ChecklistParserTestCase(TestCase):
         actual = self.parser.get_checklist()['protocol']['time']
         self.assertEqual('11:00', actual)
 
-    def test_checklist_observers(self):
+    def test_observer_names(self):
         """Verify the list of observers is extracted."""
         self.assertEqual(['Observer A', 'Observer B'],
-                         self.parser.get_checklist()['observers'])
+                         self.parser.get_checklist()['observers']['names'])
 
-    def test_checklist_observer_count(self):
+    def test_observers_count(self):
         """Verify the number of observers is extracted."""
-        self.assertEqual(1, self.parser.get_checklist()['observer_count'])
+        self.assertEqual(2, self.parser.get_checklist()['observers']['count'])
 
     def test_activity(self):
         """Verify the activity is extracted."""
@@ -188,16 +189,16 @@ class ChecklistParserTestCase(TestCase):
             'identifier': 'PT1000',
             'species': {'name': 'Species A'},
             'count': 10,
-            'comment_en': 'notes',
+            'comment': 'notes',
         }, {
             'identifier': 'PT1001',
             'species': {'name': 'Species B'},
             'count': 2,
-            'comment_en': '',
+            'comment': '',
         }, {
             'identifier': 'PT1002',
             'species': {'name': 'Species C'},
             'count': 0,
-            'comment_en': '',
+            'comment': '',
         }]
         self.assertEqual(expected, self.parser.get_entries())

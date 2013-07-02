@@ -125,7 +125,6 @@ class ChecklistParser(object):
         rows = self.docroot.select(xpath).extract()
 
         day, month, year = rows[2].strip().split('-')
-        hour, minute = rows[3].split('-')[0].strip().split(':')
 
         return {
             'meta': {
@@ -133,15 +132,50 @@ class ChecklistParser(object):
                 'language': CHECKLIST_FILE_LANGUAGE,
             },
             'identifier': self.country.upper() + str(self.identifier),
-            'source': 'WorldBirds',
-            'url': self.url,
             'date': "%s-%s-%s" % (year, month, day),
             'location': self.get_location(),
+            'source': self.get_source(),
             'protocol': self.get_protocol(),
+            'comment': self.get_comment(),
             'activity': rows[6].strip(),
-            'observers': [name.strip() for name in rows[-2].split(',')],
-            'observer_count': int(rows[5].strip()),
+            'observers': self.get_observers(),
             'entries': self.get_entries()
+        }
+
+    def get_source(self):
+        """Get information about the checklist's source.
+
+        Returns:
+            dict: a dictionary containing the source fields.
+        """
+        return {
+            'name': 'WorldBirds',
+            'url': self.url,
+        }
+
+    def get_comment(self):
+        """Get any comments for the checklist.
+
+        Returns:
+            unicode: the comment extracted from the checklist.
+        """
+        xpath = '(//table[@class="PopupTable"])[1]/tr/td/text()'
+        rows = self.docroot.select(xpath).extract()
+        return rows[-3].strip()
+
+    def get_observers(self):
+        """Get the checklist observers.
+
+        Returns:
+            dict: a dictionary containing the names of the observers.
+        """
+        xpath = '(//table[@class="PopupTable"])[1]/tr/td/text()'
+        rows = self.docroot.select(xpath).extract()
+        names = [name.strip() for name in rows[-2].split(',')]
+
+        return {
+            'names': names,
+            'count': len(names),
         }
 
     def get_location(self):
@@ -225,7 +259,7 @@ class ChecklistParser(object):
             'identifier': '',
             'species': self.get_species(row),
             'count': count,
-            'comment_en': columns[3].strip(),
+            'comment': columns[3].strip(),
         }
 
     def get_species(self, row):
@@ -309,7 +343,9 @@ class ObserverParser(object):
         """
         xpath = '(//table[@class="PopupTable"])[1]/tr/td/text()'
         rows = self.docroot.select(xpath).extract()
-        self.checklist['submitted_by'] = rows[1].strip()
+        if not 'source' in self.checklist:
+            self.checklist['source'] = {}
+        self.checklist['source']['submitted_by'] = rows[1].strip()
         return self.checklist
 
 
@@ -560,7 +596,7 @@ class WorldBirdsSpider(BaseSpider):
         finished.
         """
         if self.directory:
-            source = checklist['source'].replace(' ', '-').lower()
+            source = checklist['source']['name'].replace(' ', '-').lower()
             path = os.path.join(self.directory, "%s-%s.json" % (
                 source, checklist['identifier']))
             save_json_data(path, checklist)
@@ -568,4 +604,4 @@ class WorldBirdsSpider(BaseSpider):
 
             self.log("Wrote %s: %s %s (%s)" % (
                 path, checklist['date'], checklist['location']['name'],
-                checklist['submitted_by']), log.INFO)
+                checklist['source']['submitted_by']), log.INFO)

@@ -5,7 +5,6 @@ using the eBird API. Additional information for each checklist is also
 scraped from the checklist web page.
 """
 
-import copy
 import json
 import os
 import re
@@ -73,28 +72,73 @@ class JSONParser(object):
         Returns:
             dict: a dictionary containing the checklist fields.
         """
-        first_name = record['firstName'].strip()
-        last_name = record['lastName'].strip()
-
         checklist = {
             'meta': {
                 'version': CHECKLIST_FILE_FORMAT_VERSION,
                 'language': CHECKLIST_FILE_LANGUAGE,
             },
             'identifier': record['subID'].strip(),
-            'location': self.get_location(record),
             'date': record['obsDt'].strip().split(' ')[0],
-            'submitted_by': first_name + ' ' + last_name,
-            'observers': [first_name + ' ' + last_name],
-            'source': 'eBird',
+            'location': self.get_location(record),
+            'observers': self.get_observers(record),
+            'source': self.get_source(record),
         }
 
         if ' ' in record['obsDt']:
-            checklist['protocol'] = {
-                'time': record['obsDt'].strip().split(' ')[1],
-            }
+            checklist['protocol'] = self.get_protocol(record)
 
         return checklist
+
+    def get_protocol(self, record):
+        """Get the information about the checklist protocol.
+
+        Args:
+            record (dict): the observation record.
+
+        Returns:
+            dict: a dictionary containing the protocol fields.
+
+        A default protocol name of 'Incidental' is used since only the time
+        of the observation is currently available.
+        """
+        return {
+            'name': 'Incidental',
+            'time': record['obsDt'].strip().split(' ')[1],
+        }
+
+    def get_observers(self, record):
+        """Get the information about the checklist observers.
+
+        Args:
+            record (dict): the observation record.
+
+        Returns:
+            dict: a dictionary containing the list of observers names.
+        """
+        first_name = record['firstName'].strip()
+        last_name = record['lastName'].strip()
+
+        return {
+            'count':  1,
+            'names': [first_name + ' ' + last_name],
+        }
+
+    def get_source(self, record):
+        """Get the information about the source of the checklist.
+
+        Args:
+            record (dict): the observation record.
+
+        Returns:
+            dict: a dictionary containing the source fields.
+        """
+        first_name = record['firstName'].strip()
+        last_name = record['lastName'].strip()
+
+        return {
+            'name': 'eBird',
+            'submitted_by': first_name + ' ' + last_name,
+        }
 
     def get_locations(self):
         """Get the set of locations from the observations.
@@ -164,12 +208,10 @@ class HTMLParser(object):
     # eBird mixes up activities and protocols a bit so this table is used
     # to map protocol names onto an activity and alternative protocol.
     activities = {
-        'Nocturnal Flight Call Count':
-            ('Nocturnal Flight Call Count', 'Stationary'),
-        'Heron Area Count':
-            ('Heron Count', 'Area'),
-        'Heron Stationary Count':
-            ('Heron Count', 'Stationary'),
+        'Nocturnal Flight Call Count': (
+            'Nocturnal Flight Call Count', 'Stationary'),
+        'Heron Area Count': ('Heron Count', 'Area'),
+        'Heron Stationary Count': ('Heron Count', 'Stationary'),
     }
 
     default_activity = 'Birding'
@@ -213,11 +255,11 @@ class HTMLParser(object):
         HTML. The parser can be sub-classed to extract any more information.
         """
         return {
-            'observer_count': self.get_observer_count(),
             'observers': self.get_observers(),
             'activity': self.get_activity(),
             'protocol': self.get_protocol(),
             'entries': self.get_entries(),
+            'comment': self.attributes.get('Comments:', '')
         }
 
     def get_protocol(self):
@@ -285,22 +327,15 @@ class HTMLParser(object):
             list(str): the observers, excluding the person who submitted the
                 checklist.
         """
-        return remove_whitespace(
+
+        count = int(self.attributes.get('Party Size:', '0'))
+        names = remove_whitespace(
             self.attributes.get('Observers:', '').split(','))
 
-    def get_observer_count(self):
-        """Get the number of observers present.
-
-        Returns:
-           int: the number of observers for the checklist. Defaults to zero
-               if the data is missing from the HTML or there is an error
-               converting it to an int.
-        """
-        try:
-            count = int(self.attributes.get('Party Size:', '0'))
-        except ValueError:
-            count = 0
-        return count
+        return {
+            'count': count,
+            'names': names,
+        }
 
     def get_entries(self):
         """Get the checklist entries with any additional details for the count.
@@ -548,7 +583,7 @@ class EBirdSpider(BaseSpider):
         update = self.html_parser(response).get_checklist()
         original = response.meta['checklist']
         checklist = self.merge_checklists(original, update)
-        checklist['url'] = response.url
+        checklist['source']['url'] = response.url
         self.save_checklist(checklist)
 
     def merge_checklists(self, original, update):
@@ -574,11 +609,11 @@ class EBirdSpider(BaseSpider):
             'identifier': original['identifier'],
             'date': original['date'],
             'source': original['source'],
-            'observers': original['observers'] + update['observers'],
-            'observer_count': update['observer_count'],
-            'submitted_by': original['submitted_by'],
+            'observers': self.merge_observers(original['observers'],
+                                              update['observers']),
             'activity': update['activity'],
             'location': original['location'],
+            'comment': update['comment'],
             'entries': entries,
         }
 
@@ -595,6 +630,31 @@ class EBirdSpider(BaseSpider):
 
         return checklist
 
+    def merge_observers(self, originals, updates):
+        """Merge the two lists of observers together.
+
+        Args:
+           originals (list): the observer extracted from the API JSON data.
+           updates (list): the observers extracted from the web page.
+
+        Returns:
+           dict: a dictionary containing all the names reported as observers
+           on the two checklists along with a total count of the number of
+           observers present.
+        """
+        names = set(originals['names'])
+        names.update(set(updates['names']))
+
+        total = originals['count'] + updates['count']
+
+        for name in originals['names']:
+            if name in updates['names']:
+                total -= 1
+
+        return {
+            'names': list(names),
+            'count': total,
+        }
 
     def merge_entries(self, originals, updates):
         """Merge two lists of entries together.
@@ -702,10 +762,10 @@ class EBirdSpider(BaseSpider):
         """
         if self.directory:
             path = os.path.join(self.directory, "%s-%s.json" % (
-                checklist['source'], checklist['identifier']))
+                checklist['source']['name'], checklist['identifier']))
             save_json_data(path, checklist)
             self.checklists.append(checklist)
 
             self.log("Wrote %s: %s %s (%s)" % (
                 path, checklist['date'], checklist['location']['name'],
-                checklist['submitted_by']), log.DEBUG)
+                checklist['source']['submitted_by']), log.DEBUG)

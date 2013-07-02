@@ -28,10 +28,14 @@ class MergeChecklistsTestCase(TestCase):
             'protocol': {
                 'time': '09:00',
             },
-            'submitted_by': 'Name Surname',
-            'observers': ['Name Surname'],
-            'observer_count': 1,
-            'source': 'eBird',
+            'observers': {
+                'names': ['Name Surname'],
+                'count': 1,
+            },
+            'source': {
+                'name': 'eBird',
+                'submitted_by': 'Name Surname',
+            },
             'location': {
                 'identifier': 'L0000001',
                 'name': 'Location 1',
@@ -58,8 +62,10 @@ class MergeChecklistsTestCase(TestCase):
             },
             'source': 'ebird',
             'url': 'http://ebird.org/',
-            'observers': [],
-            'observer_count': 1,
+            'observers': {
+                'names': ['Other Name'],
+                'count': 1,
+            },
             'activity': 'Birding',
             'protocol': {
                 'name': 'Traveling',
@@ -68,6 +74,7 @@ class MergeChecklistsTestCase(TestCase):
                 'distance': 2000,
                 'area': 0,
             },
+            'comment': 'A comment',
             'entries': [
                 {
                     'species': {
@@ -84,11 +91,6 @@ class MergeChecklistsTestCase(TestCase):
         }
 
         self.fixture = self.spider.merge_checklists(self.lista, self.listb)
-
-    def test_observer_count(self):
-        """Verify the number of observers is set."""
-        self.fixture = self.spider.merge_checklists(self.lista, self.listb)
-        self.assertEqual(1, self.fixture['observer_count'])
 
     def test_activity(self):
         """Verify the activity is included in the merged checklist."""
@@ -107,6 +109,15 @@ class MergeChecklistsTestCase(TestCase):
             'area': 0,
         }
         self.assertEqual(expected, self.fixture['protocol'])
+
+    def test_observers(self):
+        """Verify the observers are merged."""
+        self.fixture = self.spider.merge_checklists(self.lista, self.listb)
+        expected = {
+            'count': 2,
+            'names': ['Name Surname', 'Other Name'],
+        }
+        self.assertEqual(expected, self.fixture['observers'])
 
     def test_details(self):
         """Verify the entry details are set."""

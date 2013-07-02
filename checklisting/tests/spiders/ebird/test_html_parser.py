@@ -25,7 +25,7 @@ class ParseHTMLChecklistTestCase(TestCase):
 
                                 Sun Mar 24, 2013
 
-                            3:10 PMdata from the checklist web page
+                            3:10 PM
 
                             </h5>
                             <dl class="def-list">
@@ -52,6 +52,14 @@ class ParseHTMLChecklistTestCase(TestCase):
 
                                 </dd>
                             </dl>
+                            <dl class="def-list">
+                                <dt>Comments:</dt>
+                                <dd>
+
+                                    A comment.
+
+                                </dd>
+                            </dl>
                         </div>
                     </div>
                 </div>
@@ -70,8 +78,18 @@ class ParseHTMLChecklistTestCase(TestCase):
             u'Duration:': u'2 hour(s) 35 minute(s)',
             u'Distance:': u'2.0 kilometer(s)',
             u'Observers:': u'Stuart MacKay',
+            u'Comments:': u'A comment.',
         }
         actual = self.parser.get_attributes(self.parser.docroot)
+        self.assertEqual(expected, actual)
+
+    def test_get_source(self):
+        """Verify the observers names can be extracted from the page."""
+        expected = {
+            'count': 1,
+            'names': ['Stuart MacKay'],
+        }
+        actual = self.parser.get_observers()
         self.assertEqual(expected, actual)
 
     def test_get_protocol(self):

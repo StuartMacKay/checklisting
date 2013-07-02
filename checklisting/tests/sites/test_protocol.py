@@ -8,7 +8,11 @@ Validation Tests:
     ProtocolName:
         1. name is a string.
         2. name is set.
-        3.  name does not have leading/trailing whitespace.
+        3. name does not have leading/trailing whitespace.
+
+    ProtocolTime:
+        1. time is a string.
+        2. time has the format 'dd:dd'
 
     ProtocolDuration
         1. duration hours is an int.
@@ -63,6 +67,24 @@ class ProtocolName(ValidationTestCase):
         """Verify the protocol name has no extra whitespace."""
         for protocol in self.protocols:
             self.assertStripped(protocol['name'])
+
+
+class ProtocolTime(ValidationTestCase):
+    """Validate the protocol time in the downloaded checklists."""
+
+    def setUp(self):
+        """Initialize the test."""
+        self.protocols = [checklist['protocol'] for checklist in checklists]
+
+    def test_name_type(self):
+        """Verify the protocol name is a unicode string."""
+        for protocol in self.protocols:
+            self.assertIsInstance(protocol['time'], unicode)
+
+    def test_name_format(self):
+        """Verify the protocol name is set."""
+        for protocol in self.protocols:
+            self.assertRegexpMatches(protocol['time'], r'\d\d:\d\d')
 
 
 class ProtocolDuration(ValidationTestCase):
@@ -134,6 +156,165 @@ class EbirdProtocolName(ValidationTestCase):
             self.assertTrue(protocol['name'] in expected)
 
 
+class EbirdTravelingProtocol(ValidationTestCase):
+    """Validate the fields set in the Traveling protocol from ebird."""
+
+    def setUp(self):
+        """Initialize the test."""
+        self.protocols = [checklist['protocol'] for checklist in checklists
+                          if checklist['source'] == 'ebird' and
+                          checklist['protocol']['name'] == 'Traveling']
+
+    def test_time_set(self):
+        """Verify the time is set for the Traveling protocol."""
+        for protocol in self.protocols:
+            self.assertTrue(protocol['time'])
+
+    def test_duration_set(self):
+        """Verify the time is set for the Traveling protocol."""
+        for protocol in self.protocols:
+            self.assertTrue(protocol['duration_hours'] or
+                            protocol['duration_minutes'])
+
+    def test_distance_set(self):
+        """Verify the distance is set for the Traveling protocol."""
+        for protocol in self.protocols:
+            self.assertTrue(protocol['distance'])
+
+    def test_area_clear(self):
+        """Verify the area is not set for the Traveling protocol."""
+        for protocol in self.protocols:
+            self.assertEqual(0, protocol['area'])
+
+
+class EbirdStationaryProtocol(ValidationTestCase):
+    """Validate the fields set in the Stationary protocol from ebird."""
+
+    def setUp(self):
+        """Initialize the test."""
+        self.protocols = [checklist['protocol'] for checklist in checklists
+                          if checklist['source'] == 'ebird' and
+                          checklist['protocol']['name'] == 'Stationary']
+
+    def test_time_set(self):
+        """Verify the time is set for the Traveling protocol."""
+        for protocol in self.protocols:
+            self.assertTrue(protocol['time'])
+
+    def test_duration_set(self):
+        """Verify the time is set for the Traveling protocol."""
+        for protocol in self.protocols:
+            self.assertTrue(protocol['duration_hours'] or
+                            protocol['duration_minutes'])
+
+    def test_distance_clear(self):
+        """Verify the distance is not set for the Stationary protocol."""
+        for protocol in self.protocols:
+            self.assertEqual(0, protocol['distance'])
+
+    def test_area_clear(self):
+        """Verify the area is not set for the Stationary protocol."""
+        for protocol in self.protocols:
+            self.assertEqual(0, protocol['area'])
+
+
+class EbirdAreaProtocol(ValidationTestCase):
+    """Validate the fields set in the Area protocol from ebird."""
+
+    def setUp(self):
+        """Initialize the test."""
+        self.protocols = [checklist['protocol'] for checklist in checklists
+                          if checklist['source'] == 'ebird' and
+                          checklist['protocol']['name'] == 'Area']
+
+    def test_time_set(self):
+        """Verify the time is set for the Area protocol."""
+        for protocol in self.protocols:
+            self.assertTrue(protocol['time'])
+
+    def test_duration_set(self):
+        """Verify the time is set for the Area protocol."""
+        for protocol in self.protocols:
+            self.assertTrue(protocol['duration_hours'] or
+                            protocol['duration_minutes'])
+
+    def test_distance_clear(self):
+        """Verify the distance is not set for the Area protocol."""
+        for protocol in self.protocols:
+            self.assertEqual(0, protocol['distance'])
+
+    def test_area_set(self):
+        """Verify the area is set for the Area protocol."""
+        for protocol in self.protocols:
+            self.assertTrue(protocol['area'])
+
+
+class EbirdRandomProtocol(ValidationTestCase):
+    """Validate the fields set in the Random protocol from ebird."""
+
+    def setUp(self):
+        """Initialize the test."""
+        self.protocols = [checklist['protocol'] for checklist in checklists
+                          if checklist['source'] == 'ebird' and
+                          checklist['protocol']['name'] == 'Random']
+
+    def test_time_set(self):
+        """Verify the time is set for the Random protocol."""
+        for protocol in self.protocols:
+            self.assertTrue(protocol['time'])
+
+    def test_duration_set(self):
+        """Verify the time is set for the Random protocol."""
+        for protocol in self.protocols:
+            self.assertTrue(protocol['duration_hours'] or
+                            protocol['duration_minutes'])
+
+    def test_distance_set(self):
+        """Verify the distance is set for the Random protocol."""
+        for protocol in self.protocols:
+            self.assertTrue(protocol['distance'])
+
+    def test_area_clear(self):
+        """Verify the area is not set for the Random protocol."""
+        for protocol in self.protocols:
+            self.assertEqual(0, protocol['area'])
+
+
+class EbirdIncidentalProtocol(ValidationTestCase):
+    """Validate the fields set in the Incidental protocol from ebird."""
+
+    def setUp(self):
+        """Initialize the test."""
+        self.protocols = [checklist['protocol'] for checklist in checklists
+                          if checklist['source'] == 'ebird' and
+                          checklist['protocol']['name'] == 'Incidental']
+
+    def test_time_set(self):
+        """Verify the time is set for the Incidental protocol."""
+        for protocol in self.protocols:
+            self.assertTrue(protocol['time'])
+
+    def test_duration_hours_clear(self):
+        """Verify duration in hours is not set for the Incidental protocol."""
+        for protocol in self.protocols:
+            self.assertEqual(0, protocol['duration_hours'])
+
+    def test_duration_minutes_clear(self):
+        """Verify duration in minutesis not set for the Incidental protocol."""
+        for protocol in self.protocols:
+            self.assertEqual(0, protocol['duration_minutes'])
+
+    def test_distance_clear(self):
+        """Verify the distance is not set for the Incidental protocol."""
+        for protocol in self.protocols:
+            self.assertEqual(0, protocol['distance'])
+
+    def test_area_clear(self):
+        """Verify the area is not set for the Incidental protocol."""
+        for protocol in self.protocols:
+            self.assertEqual(0, protocol['area'])
+
+
 class WorldBirdsProtocolName(ValidationTestCase):
     """Validate the protocol names in the downloaded checklists from ebird."""
 
@@ -151,3 +332,34 @@ class WorldBirdsProtocolName(ValidationTestCase):
         """
         for protocol in self.protocols:
             self.assertEqual(protocol['name'], 'Timed visit')
+
+
+class WorldBirdsTimedVisitProtocol(ValidationTestCase):
+    """Validate the fields set in the Time visits protocol from WorldBirds."""
+
+    def setUp(self):
+        """Initialize the test."""
+        self.protocols = [checklist['protocol'] for checklist in checklists
+                          if checklist['source'] == 'worldbirds' and
+                          checklist['protocol']['name'] == 'Timed visit']
+
+    def test_time_set(self):
+        """Verify the time is set for the Timed visit protocol."""
+        for protocol in self.protocols:
+            self.assertTrue(protocol['time'])
+
+    def test_duration_set(self):
+        """Verify the time is set for the Timed visit protocol."""
+        for protocol in self.protocols:
+            self.assertTrue(protocol['duration_hours'] or
+                            protocol['duration_minutes'])
+
+    def test_distance_clear(self):
+        """Verify the distance is not set for the Timed visit protocol."""
+        for protocol in self.protocols:
+            self.assertEqual(0, protocol['distance'])
+
+    def test_area_clear(self):
+        """Verify the area is not set for the Timed visit protocol."""
+        for protocol in self.protocols:
+            self.assertEqual(0, protocol['area'])

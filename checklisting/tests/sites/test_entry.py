@@ -9,6 +9,9 @@ Validation Tests:
        1. count is an integer.
        2. count is positive.
 
+   EntryComment (optional):
+       1. comment is a unicode string.
+
 """
 from checklisting.tests.sites import checklists, ValidationTestCase
 
@@ -46,3 +49,24 @@ class EntryCount(ValidationTestCase):
         """Verify the entry count is a positive integer."""
         for entry in self.entries:
             self.assertTrue(entry['count'] >= 0)
+
+
+class EntryComment(ValidationTestCase):
+    """Validate the entry comment in the downloaded checklists."""
+
+    def setUp(self):
+        """Initialize the test."""
+        self.comments = []
+        for checklist in checklists:
+            for entry in checklist['entries']:
+                self.comments.append(entry['comment'])
+
+    def test_comment_type(self):
+        """Verify the entry count is a unicode string."""
+        for comment in self.comments:
+            self.assertIsInstance(comment, unicode)
+
+    def test_checklist_identifier_stripped(self):
+        """Verify the entry comment has no extra whitespace."""
+        for comment in self.comments:
+            self.assertStripped(comment)
