@@ -18,37 +18,42 @@ settings must be edited or more specifically you create a local_settings.py
 file which is used to override the default settings. The process is quite
 simple.
 
-1. First install the dependencies (scrapy)
+1. First install the dependencies (scrapy)::
 
-       pip install scrapy
+   pip install scrapy
 
 2. Next download and unpack the package::
 
        pip install --no-deps --no-install checklisting
 
-3. Now edit the local settings to suit your configuration and save it to the
-   checklisting module (where the settings.py file is located)::
+   If you are using a virtualenv then the package can be found relative to the
+   environment's root directory: "<virtualenv-root>/build/checklisting"
+   otherwise it will either be downloaded to a sub-directory of the main temp
+   directory, "<OS temp dir>/pip-build-<username>" or to the current directory.
 
-       cd <virtualenv>/build/checklisting
-       nano local_settings.py
+   You can download the package to any directory of your choosing using::
+
+       pip install -d <dir> checklisting
+
+   then unpack the package using::
+
+       tar zxvf checklisting-<version>.tar.gz
+
+
+3. Now edit the file local_settings.py in the root directory of the package to
+   specify the mail server and addresses to use for sending out status reports
+   when a crawler completes downloading checklists from a given source.
+
+   There are other settings in checklisting/settings.py which you can override
+   in the local settings files but these should all have sane defaults.
+
+   Save the edited local_settings.py to the checklisting sub-directory (where
+   the settings.py file is located).
 
 4. Finally build and install the package::
 
-       python setup.py install
+    python setup.py install
 
-Note: this assumes you are installing the package in a virtualenv. If you are
-installing in the global environment then the only difference is the directory
-where pip downloads an unpacks the package, which be in main tmp directory,
-"<OS temp dir>/pip-build-<username>". You can download the package to any
-directory of your choosing using::
-
-    pip install -d <dir> checklisting
-
-then unpack the package using::
-
-    tar zxvf checklisting-<version>.tar.gz
-
-and proceed from step 3, above.
 
 Scrapyd
 -------
