@@ -11,7 +11,7 @@ third-party databases. Crawlers are available for:
 :worldbirds:
     Download recently submitted checklists from the network of databases
     hosted by WorldBirds (BirdLife International). See the docs for the
-    `Worldbirds crawler <http://www.github.com/StuartMacKay/checklisting/docs/spiders/worldbirds.rst>`_
+    `Worldbirds crawler <http://www.github.com/StuartMacKay/checklisting/blob/master/docs/spiders/worldbirds.rst>`_
     for a list of the supported databases.
 
 
@@ -25,15 +25,28 @@ dependencies are installed::
 
 Next download and unpack the package::
 
-    pip install --no-deps --no-install
+    pip install --no-deps --no-install checklisting
 
-Now edit the local settings to suit your configuration and save it to the
-checklisting module (where the settings.py file is located)::
+If you are using a virtualenv then the package can be found relative to its
+root directory::
 
-    cd <virtualenv>/build/checklisting
-    nano local_settings.py
+    cd <virtualenv-root>/build/checklisting
 
-Finally build and install the package::
+Otherwise the package is unpacked relative to the current directory::
+
+    cd build/checklisting
+
+In the root directory of the project, edit the file local_settings.py to
+specify the mail server and addresses to use for sending out status reports
+when a crawler completes downloading checklists from a given source. You may
+also want to check the file checklisting/settings and override and of these
+setting in local_settings.py also. (Most of these settings have sane defaults
+so this is optional).
+
+Save the updated local settings to checklisting/local_settings.py (below the
+current directory where the settings.py file is located).
+
+Now build and install the package::
 
     python setup.py install
 
@@ -41,7 +54,7 @@ Finally build and install the package::
 You could simply run 'pip install checklisting' but then you would have to
 override any settings on the command line when running the crawlers. You can
 also install the crawlers in a scrapy daemon. Both options are discussed in
-more detail in the `Install Guide <http://www.github.com/StuartMacKay/checklisting/docs/install.rst>`_.
+more detail in the `Install Guide <http://www.github.com/StuartMacKay/checklisting/blob/master/docs/install.rst>`_.
 
 
 Crawling

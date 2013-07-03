@@ -13,7 +13,7 @@ sources attempt to extract all the information available for a given checklist
 and the nested dictionary format makes it easy to accommodate this while
 keeping the (formatted) files human-readable.
 
-A typical checklist has the following structure:
+A typical checklist has the following structure::
 
     {
         "meta": {
