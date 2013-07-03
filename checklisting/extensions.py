@@ -40,6 +40,11 @@ Time: %(time)s
 ----------
 %(errors)s
 
+------------
+  Warnings
+------------
+%(warnings)s
+
 """
 
     @classmethod
@@ -71,6 +76,7 @@ Time: %(time)s
             'time': now.strftime("%H:%M"),
             'checklists': 'No checklists downloaded',
             'errors': 'No errors reported',
+            'warnings': 'No warnings reported',
         }
 
         checklists = getattr(spider, 'checklists', [])
@@ -79,9 +85,13 @@ Time: %(time)s
         if checklists:
             summary = []
             for checklist in checklists:
+                if 'protocol' in checklist:
+                    time = checklist['protocol']['time']
+                else:
+                    time = '--:--'
                 summary.append("%s %s, %s (%s)" % (
                     checklist['date'],
-                    checklist['time'],
+                    time,
                     self.remove_accents(checklist['location']['name']),
                     self.remove_accents(checklist['submitted_by'])
                 ))
@@ -98,6 +108,28 @@ Time: %(time)s
                     failure.getTraceback()
                 ))
             context['errors'] = '\n'.join(summary).encode('utf-8')
+
+        warnings = getattr(spider, 'warnings', [])
+        spider.log("%d warnings reported" % len(warnings), log.INFO)
+
+        if warnings:
+            summary = []
+
+            for checklist, messages in warnings:
+                if 'protocol' in checklist:
+                    time = checklist['protocol']['time']
+                else:
+                    time = '--:--'
+                summary.append("%s %s, %s (%s)" % (
+                    checklist['date'],
+                    time,
+                    self.remove_accents(checklist['location']['name']),
+                    self.remove_accents(checklist['submitted_by'])
+                ))
+                summary.extend(messages)
+                summary.append('\n')
+
+            context['warnings'] = '\n'.join(summary).encode('utf-8')
 
         mailer = MailSender.from_settings(spider.settings)
         mailer.send(

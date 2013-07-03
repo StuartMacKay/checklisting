@@ -1,3 +1,21 @@
+Version 0.1a4
+-------------
+
+  * Replaced separate settings for the directory to download checklist to by
+    a single setting, CHECKLISTING_DOWNLOADS_DIR that is used by all spiders.
+  * Added a meta dictionary attribute with the keys 'version' and 'language'
+    to the JSON format files containing the downloaded checklist.
+  * Checklist files now contain ints and floats for numbers and coordinates.
+  * Protocols are defined using a name rather than a pre-defined code. Same for
+    the codes used in the 'details' section of the checklist entries . This
+    avoids making assumptions on where and how the data will be loaded.
+  * Species records now contain only two fields: name and scientific_name.
+  * Removed the language suffix from comment fields. The language for comments
+    is given in the 'meta' attribute.
+  * Added tests to download and validate checklists from real sites.
+  * Added an activity field to the checklist.
+  * Source and observers are now nested dictionaries.
+
 Version 0.1a3
 -------------
 

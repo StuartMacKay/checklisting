@@ -5,7 +5,6 @@ using the eBird API. Additional information for each checklist is also
 scraped from the checklist web page.
 """
 
-import copy
 import json
 import os
 import re
@@ -15,6 +14,8 @@ from scrapy.http import Request
 from scrapy.selector import HtmlXPathSelector
 from scrapy.spider import BaseSpider
 
+from checklisting.spiders import CHECKLIST_FILE_FORMAT_VERSION, \
+    CHECKLIST_FILE_LANGUAGE
 from checklisting.spiders.utils import remove_whitespace, select_keys, dedup, \
     save_json_data
 
@@ -71,22 +72,72 @@ class JSONParser(object):
         Returns:
             dict: a dictionary containing the checklist fields.
         """
+        checklist = {
+            'meta': {
+                'version': CHECKLIST_FILE_FORMAT_VERSION,
+                'language': CHECKLIST_FILE_LANGUAGE,
+            },
+            'identifier': record['subID'].strip(),
+            'date': record['obsDt'].strip().split(' ')[0],
+            'location': self.get_location(record),
+            'observers': self.get_observers(record),
+            'source': self.get_source(record),
+        }
+
+        if ' ' in record['obsDt']:
+            checklist['protocol'] = self.get_protocol(record)
+
+        return checklist
+
+    def get_protocol(self, record):
+        """Get the information about the checklist protocol.
+
+        Args:
+            record (dict): the observation record.
+
+        Returns:
+            dict: a dictionary containing the protocol fields.
+
+        A default protocol name of 'Incidental' is used since only the time
+        of the observation is currently available.
+        """
+        return {
+            'name': 'Incidental',
+            'time': record['obsDt'].strip().split(' ')[1],
+        }
+
+    def get_observers(self, record):
+        """Get the information about the checklist observers.
+
+        Args:
+            record (dict): the observation record.
+
+        Returns:
+            dict: a dictionary containing the list of observers names.
+        """
         first_name = record['firstName'].strip()
         last_name = record['lastName'].strip()
 
-        if ' ' in record['obsDt']:
-            time = record['obsDt'].strip().split(' ')[1]
-        else:
-            time = '12:00:00'
+        return {
+            'count':  1,
+            'names': [first_name + ' ' + last_name],
+        }
+
+    def get_source(self, record):
+        """Get the information about the source of the checklist.
+
+        Args:
+            record (dict): the observation record.
+
+        Returns:
+            dict: a dictionary containing the source fields.
+        """
+        first_name = record['firstName'].strip()
+        last_name = record['lastName'].strip()
 
         return {
-            'identifier': record['subID'].strip(),
-            'location': self.get_location(record),
-            'date': record['obsDt'].strip().split(' ')[0],
-            'time': time,
+            'name': 'eBird',
             'submitted_by': first_name + ' ' + last_name,
-            'observers': [first_name + ' ' + last_name],
-            'source': 'eBird',
         }
 
     def get_locations(self):
@@ -127,7 +178,7 @@ class JSONParser(object):
         return {
             'identifier': record['obsID'],
             'species': self.get_species(record),
-            'count': record.get('howMany', '0'),
+            'count': record.get('howMany', 0),
         }
 
     def get_species(self, record):
@@ -140,8 +191,7 @@ class JSONParser(object):
             dict: a dictionary containing the fields for a species.
         """
         return {
-            'standard_name': record['comName'],
-            'common_name_en': record['comName'],
+            'name': record['comName'],
             'scientific_name': record['sciName'],
         }
 
@@ -155,15 +205,16 @@ class HTMLParser(object):
     dictionary which contains a breakdown of the count based on age and sex.
     """
 
-    protocol_codes = {
-        'Traveling': 'TRV',
-        'Stationary': 'STA',
-        'Incidental': 'INC',
-        'Area': 'ARE',
-        'Random': 'RND',
-        'Nocturnal Flight Call Count': 'NFC',
-        'None': 'NON'
+    # eBird mixes up activities and protocols a bit so this table is used
+    # to map protocol names onto an activity and alternative protocol.
+    activities = {
+        'Nocturnal Flight Call Count': (
+            'Nocturnal Flight Call Count', 'Stationary'),
+        'Heron Area Count': ('Heron Count', 'Area'),
+        'Heron Stationary Count': ('Heron Count', 'Stationary'),
     }
+
+    default_activity = 'Birding'
 
     def __init__(self, response):
         """Initialize the parser with an HTML encoded response.
@@ -204,10 +255,11 @@ class HTMLParser(object):
         HTML. The parser can be sub-classed to extract any more information.
         """
         return {
-            'observer_count': self.get_observer_count(),
             'observers': self.get_observers(),
+            'activity': self.get_activity(),
             'protocol': self.get_protocol(),
             'entries': self.get_entries(),
+            'comment': self.attributes.get('Comments:', '')
         }
 
     def get_protocol(self):
@@ -217,8 +269,10 @@ class HTMLParser(object):
             dict: a dictionary containing the fields describing the protocol
                 used to count the birds recorded in the checklist.
         """
-        protocol_key = self.attributes.get('Protocol:', None)
-        protocol_code = self.protocol_codes.get(protocol_key, 'NON')
+        protocol_name = self.attributes.get('Protocol:', None)
+
+        if protocol_name in self.activities:
+            protocol_name = self.activities[protocol_name][1]
 
         duration_str = self.attributes.get('Duration:', '')
         if 'hour' in duration_str:
@@ -241,12 +295,30 @@ class HTMLParser(object):
                 r'([\.\d]+) m', distance_str).group(1)) * 1609)
 
         return {
-            'type': protocol_code,
+            'name': protocol_name,
             'duration_hours': duration_hours,
             'duration_minutes': duration_minutes,
             'distance': distance,
             'area': 0,
         }
+
+    def get_activity(self):
+        """Get the activity used for the checklist.
+
+        Returns:
+            str: a name for the activity.
+
+        Uses the activities table to separate out specific activities from
+        the names eBird uses for protocols.
+        """
+        protocol_name = self.attributes.get('Protocol:', None)
+
+        if protocol_name in self.activities:
+            activity = self.activities[protocol_name][0]
+        else:
+            activity = self.default_activity
+
+        return activity
 
     def get_observers(self):
         """Get the additional observers.
@@ -255,22 +327,15 @@ class HTMLParser(object):
             list(str): the observers, excluding the person who submitted the
                 checklist.
         """
-        return remove_whitespace(
+
+        count = int(self.attributes.get('Party Size:', '0'))
+        names = remove_whitespace(
             self.attributes.get('Observers:', '').split(','))
 
-    def get_observer_count(self):
-        """Get the number of observers present.
-
-        Returns:
-           int: the number of observers for the checklist. Defaults to zero
-               if the data is missing from the HTML or there is an error
-               converting it to an int.
-        """
-        try:
-            count = int(self.attributes.get('Party Size:', '0'))
-        except ValueError:
-            count = 0
-        return count
+        return {
+            'count': count,
+            'names': names,
+        }
 
     def get_entries(self):
         """Get the checklist entries with any additional details for the count.
@@ -283,35 +348,25 @@ class HTMLParser(object):
         """
         entries = []
         for selector in self.docroot.select('//tr[@class="spp-entry"]'):
-            standard_name = selector.select(
+            name = selector.select(
                 './/h5[@class="se-name"]/text()').extract()[0].strip()
             count = selector.select(
                 './/h5[@class="se-count"]/text()').extract()[0].strip()
 
-            if '(' in standard_name:
-                species = {
-                    'standard_name': standard_name.split('(')[0].strip(),
-                }
-                subspecies = {
-                    'standard_name': standard_name,
-                }
-            else:
-                species = {
-                    'standard_name': standard_name,
-                }
-                subspecies = {}
+            species = {
+                'name': name,
+            }
 
             try:
-                int(count)
+                count = int(count)
             except ValueError:
-                count = '0'
+                count = 0
 
             entries.append({
                 'species': species,
-                'subspecies': subspecies,
                 'count': count,
                 'details': self.get_entry_details(selector),
-                'comment_en': self.get_entry_comment(selector),
+                'comment': self.get_entry_comment(selector),
             })
         return entries
 
@@ -344,18 +399,19 @@ class HTMLParser(object):
                 the breakdown of the checklist entry count by age and sex.
         """
         details = []
-        for selector in node.select('.//div[@class="sd-data-age-sex"]//tr'):
+
+        xpath = './/div[@class="sd-data-age-sex"]//tr'
+        names = node.select(xpath).select('./th/text()').extract()
+
+        for selector in node.select(xpath):
             ages = selector.select('./td')
 
             if not ages:
                 continue
 
-            sex = ages[0].select('./text()').extract()[0][0].upper()
+            sex = ages[0].select('./text()').extract()[0]
 
-            if sex != 'M' and sex != 'F':
-                sex = 'X'
-
-            for index, age in zip(range(1, 5), ['JUV', 'IMM', 'AD', '']):
+            for index, age in zip(range(1, 5), names):
                 values = ages[index].select('./text()').extract()
                 if values:
                     details.append({
@@ -384,7 +440,7 @@ class EBirdSpider(BaseSpider):
 
     Three settings control the behaviour of the spider:
 
-    EBIRD_DOWNLOAD_DIR: the directory where the downloaded checklists
+    CHECKLISTING_DOWNLOAD_DIR: the directory where the downloaded checklists
     will be written in JSON format. The directory will be created if it does
     not exist.
 
@@ -428,6 +484,7 @@ class EBirdSpider(BaseSpider):
 
         self.checklists = []
         self.errors = []
+        self.warnings = []
 
     def start_requests(self):
         """Configure the spider and issue the first request to the eBird API.
@@ -440,7 +497,7 @@ class EBirdSpider(BaseSpider):
         self.log("Fetching observations for the past %d days" % self.duration,
                  log.INFO)
 
-        self.directory = self.settings['EBIRD_DOWNLOAD_DIR']
+        self.directory = self.settings['CHECKLISTING_DOWNLOAD_DIR']
         if self.directory and not os.path.exists(self.directory):
             os.makedirs(self.directory)
         self.log("Writing checklists to %s" % self.directory, log.INFO)
@@ -450,7 +507,6 @@ class EBirdSpider(BaseSpider):
             self.log("Downloading checklists from API and web pages", log.INFO)
         else:
             self.log("Downloading checklists from API only", log.INFO)
-
 
         url = self.region_url % (self.region, self.duration)
         return [Request(url, callback=self.parse_region)]
@@ -527,7 +583,7 @@ class EBirdSpider(BaseSpider):
         update = self.html_parser(response).get_checklist()
         original = response.meta['checklist']
         checklist = self.merge_checklists(original, update)
-        checklist['url'] = response.url
+        checklist['source']['url'] = response.url
         self.save_checklist(checklist)
 
     def merge_checklists(self, original, update):
@@ -538,28 +594,155 @@ class EBirdSpider(BaseSpider):
            update (dict): the checklist extracted from the web page.
 
         Returns:
-           dict: a deep copy of the JSON checklist updated with values from
-               the checklist obtained from the web page.
+           dict: an updated checklist containing values from the first
+              (original) updated with values from the second (update).
         """
-        result = copy.deepcopy(original)
 
-        result['observers'] = original['observers'] + update['observers']
-        result['observer_count'] = update['observer_count']
-        result['protocol'] = update['protocol']
+        entries, warnings = self.merge_entries(
+            original['entries'], update['entries'])
 
-        entries = {entry['species']['standard_name']: entry
-                   for entry in result['entries']}
+        checklist = {
+            'meta': {
+                'version': original['meta']['version'],
+                'language': original['meta']['language'],
+            },
+            'identifier': original['identifier'],
+            'date': original['date'],
+            'source': original['source'],
+            'observers': self.merge_observers(original['observers'],
+                                              update['observers']),
+            'activity': update['activity'],
+            'location': original['location'],
+            'comment': update['comment'],
+            'entries': entries,
+        }
 
-        for entry in update['entries']:
-            key = entry['species']['standard_name']
-            if key in entries:
-                entries[key].update(entry)
+        if 'protocol' in original:
+            protocol = original['protocol'].copy()
+            protocol.update(update['protocol'])
+        else:
+            protocol = update['protocol'].copy()
+
+        checklist['protocol'] = protocol
+
+        if warnings:
+            self.warnings.append((checklist, warnings))
+
+        return checklist
+
+    def merge_observers(self, originals, updates):
+        """Merge the two lists of observers together.
+
+        Args:
+           originals (list): the observer extracted from the API JSON data.
+           updates (list): the observers extracted from the web page.
+
+        Returns:
+           dict: a dictionary containing all the names reported as observers
+           on the two checklists along with a total count of the number of
+           observers present.
+        """
+        names = set(originals['names'])
+        names.update(set(updates['names']))
+
+        total = originals['count'] + updates['count']
+
+        for name in originals['names']:
+            if name in updates['names']:
+                total -= 1
+
+        return {
+            'names': list(names),
+            'count': total,
+        }
+
+    def merge_entries(self, originals, updates):
+        """Merge two lists of entries together.
+
+        Args:
+           originals (list): the entries extracted from the API JSON data.
+           updates (list): the entries extracted from the web page.
+
+        Returns:
+           tuple(list, list): a tuple containing the complete (deep) copy of
+               the entries merged together and a list of any warnings generated
+               when merging the lists together.
+
+        IMPORTANT: The records from the API contain only the species name.
+        The subspecies name is discarded. That means if there are two records
+        for a species with the same count. It won't be possible to determine
+        which record to update when the lists are merged. In this case the
+        records will not be merged and only the records from the API will be
+        included in the merged list.
+        """
+
+        merged = []
+        warnings = []
+
+        for entry in originals:
+            merged.append({
+                'identifier': entry['identifier'],
+                'species': entry['species'].copy(),
+                'count': entry['count'],
+            })
+
+        index = {}
+
+        for entry in merged:
+            key = entry['species']['name'].split('(')[0].strip()
+            if key in index:
+                index[key][entry['count']].append(entry)
             else:
-                entries[key] = entry
+                index[key] = {entry['count']: [entry]}
 
-        result['entries'] = entries.values()
+        for name, counts in index.items():
+            for count, entries in counts.items():
+                if len(entries) > 1:
+                    warnings.append(
+                        "Could not update entry. There are %s entries that"
+                        " match: species=%s; count=%d." % (
+                            len(entries), name, count))
 
-        return result
+        for entry in updates:
+            key = entry['species']['name'].split('(')[0].strip()
+            count = entry['count']
+            target = None
+            added = False
+
+            if key in index:
+                if count in index[key]:
+                    hits = len(index[key][count])
+                else:
+                    hits = 0
+
+                if hits == 0:
+                    target = {}
+                    merged.append(target)
+                    added = True
+                elif hits == 1:
+                    target = index[key][count][0]
+            else:
+                target = {}
+                merged.append(target)
+                added = True
+
+            if target is not None:
+                target['species'] = entry['species'].copy()
+                target['count'] = entry['count']
+
+                if 'comment' in entry:
+                    target['comment'] = entry['comment']
+
+                if 'details' in entry:
+                    target['details'] = []
+                    for detail in entry['details']:
+                        target['details'].append(detail.copy())
+
+            if added:
+                warnings.append("Added new entry: species=%s; count=%d." % (
+                    entry['species']['name'], entry['count']))
+
+        return merged, warnings
 
     def save_checklist(self, checklist):
         """Save the checklist in JSON format.
@@ -570,8 +753,8 @@ class EBirdSpider(BaseSpider):
         The filename using the source, in this case 'ebird' and the checklist
         identifier so that the data is always written to the same file. The
         directory where the files are written is defined by the setting
-        EBIRD_DOWNLOAD_DIR. If the directory attribute is set to None then the
-        checklist is not saved (used for testing).
+        CHECKLISTING_DOWNLOAD_DIR. If the directory attribute is set to None
+        then the checklist is not saved (used for testing).
 
         The saved checklist is added to the list of checklists downloaded so
         far so it can be used to generate a status report once the spider has
@@ -579,10 +762,10 @@ class EBirdSpider(BaseSpider):
         """
         if self.directory:
             path = os.path.join(self.directory, "%s-%s.json" % (
-                checklist['source'], checklist['identifier']))
+                checklist['source']['name'], checklist['identifier']))
             save_json_data(path, checklist)
             self.checklists.append(checklist)
 
             self.log("Wrote %s: %s %s (%s)" % (
                 path, checklist['date'], checklist['location']['name'],
-                checklist['submitted_by']), log.DEBUG)
+                checklist['source']['submitted_by']), log.DEBUG)

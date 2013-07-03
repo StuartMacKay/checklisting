@@ -45,15 +45,24 @@ class LocationParserTestCase(TestCase):
           <td colspan="2"><br><a target="_parent" href="locationreport.php?id=1&amp;so=3">Run Location Report</a></td>
         </tr>
         <tr>
-          <td width="5%"><br><a onclick="doGoogleLocation(1)" href="#"><img src="images/theme_blue/map.gif"></a></td>
+          <td width="5%"><br>
+            <a onclick="doGoogleLocation(1)" href="#">
+              <img src="images/theme_blue/map.gif">
+            </a>
+          </td>
           <td><br><a onclick="doGoogleLocation(1)" href="#">Google</a></td>
           <td>&nbsp;</td>
         </tr>
         </table>
-        """, 'utf-8', metadata={'checklist': data})
+        """, 'utf-8', metadata={'checklist': data, 'identifiers': (1, 2, 3),
+                                'country': 'pt'})
         self.parser = LocationParser(self.response)
         self.checklist = self.parser.get_checklist()
         self.location = self.checklist['location']
+
+    def test_location_identifier(self):
+        """Verify the latitude is extracted."""
+        self.assertEqual('PT2', self.location['identifier'])
 
     def test_location_country(self):
         """Verify the latitude is extracted."""
@@ -61,8 +70,8 @@ class LocationParserTestCase(TestCase):
 
     def test_location_latitude(self):
         """Verify the latitude is extracted."""
-        self.assertEqual('45.0000', self.location['lat'])
+        self.assertEqual(45.0, self.location['lat'])
 
     def test_location_latitude(self):
         """Verify the longitude is extracted."""
-        self.assertEqual('-45.0000', self.location['lng'])
+        self.assertEqual(-45.0, self.location['lon'])

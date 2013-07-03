@@ -1,7 +1,9 @@
 """Tests for parsing the WorldBirds page containing the checklist."""
-
+from datetime import datetime
 from unittest import TestCase
 
+from checklisting.spiders import CHECKLIST_FILE_FORMAT_VERSION, \
+    CHECKLIST_FILE_LANGUAGE
 from checklisting.spiders.worldbirds_spider import ChecklistParser
 from checklisting.tests.utils import response_for_content
 
@@ -59,7 +61,7 @@ class ChecklistParserTestCase(TestCase):
         </tr>
         <tr>
           <td><label>Purpose</label></td>
-          <td></td><td></td>
+          <td>Birdwatching, with no specific purpose</td><td></td>
         </tr>
         <tr valign="top">
           <td><label>Other notes for the visit</label></td>
@@ -111,20 +113,32 @@ class ChecklistParserTestCase(TestCase):
         </div>
         </div>
         </div>
-        """, 'utf-8', metadata={'identifiers': (1, 2, 3)})
+        """, 'utf-8', metadata={'identifiers': (1, 2, 3), 'country': 'pt'})
         self.parser = ChecklistParser(self.response)
+
+    def test_checklist_version(self):
+        """Verify the version number for the checklist format is defined."""
+        self.assertEqual(CHECKLIST_FILE_FORMAT_VERSION,
+                         self.parser.get_checklist()['meta']['version'])
+
+    def test_checklist_language(self):
+        """Verify the language used for the checklist format is defined."""
+        self.assertEqual(CHECKLIST_FILE_LANGUAGE,
+                         self.parser.get_checklist()['meta']['language'])
 
     def test_checklist_identifier(self):
         """Verify the checklist identifier is extracted."""
-        self.assertEqual(1, self.parser.get_checklist()['identifier'])
+        self.assertEqual('PT1', self.parser.get_checklist()['identifier'])
 
-    def test_checklist_source(self):
-        """Verify the checklist source is extracted."""
-        self.assertEqual('WorldBirds', self.parser.get_checklist()['source'])
+    def test_source_name(self):
+        """Verify the name of the source is extracted."""
+        actual = self.parser.get_checklist()['source']['name']
+        self.assertEqual('WorldBirds', actual)
 
-    def test_checklist_url(self):
+    def test_source_url(self):
         """Verify the checklist url is extracted."""
-        self.assertEqual('http://example.com', self.parser.get_checklist()['url'])
+        actual = self.parser.get_checklist()['source']['url']
+        self.assertEqual('http://example.com', actual)
 
     def test_checklist_date(self):
         """Verify the checklist date is extracted."""
@@ -132,23 +146,30 @@ class ChecklistParserTestCase(TestCase):
 
     def test_checklist_time(self):
         """Verify the checklist time is extracted."""
-        self.assertEqual('11:00', self.parser.get_checklist()['time'])
+        actual = self.parser.get_checklist()['protocol']['time']
+        self.assertEqual('11:00', actual)
 
-    def test_checklist_observers(self):
+    def test_observer_names(self):
         """Verify the list of observers is extracted."""
-        self.assertEqual(['Observer A', 'Observer B'], self.parser.get_checklist()['observers'])
+        self.assertEqual(['Observer A', 'Observer B'],
+                         self.parser.get_checklist()['observers']['names'])
 
-    def test_checklist_observer_count(self):
+    def test_observers_count(self):
         """Verify the number of observers is extracted."""
-        self.assertEqual(1, self.parser.get_checklist()['observer_count'])
+        self.assertEqual(2, self.parser.get_checklist()['observers']['count'])
+
+    def test_activity(self):
+        """Verify the activity is extracted."""
+        self.assertEqual('Birdwatching, with no specific purpose',
+                         self.parser.get_checklist()['activity'])
 
     def test_location_name(self):
         """Verify the location name is extracted."""
         self.assertEqual('Location A', self.parser.get_location()['name'])
 
     def test_protocol_type(self):
-        """Verify the protocol type is extracted."""
-        self.assertEqual('TIM', self.parser.get_protocol()['type'])
+        """Verify the protocol name is extracted."""
+        self.assertEqual('Timed visit', self.parser.get_protocol()['name'])
 
     def test_protocol_duration_hours(self):
         """Verify the duration hours of the visit is extracted."""
@@ -164,24 +185,20 @@ class ChecklistParserTestCase(TestCase):
 
     def test_entries(self):
         """Verify the entries."""
-        expected = [
-            {
-                'identifier': '1000',
-                'species': { 'standard_name': 'Species A', },
-                'count': '10',
-                'comment': 'notes',
-            },
-            {
-                'identifier': '1001',
-                'species': { 'standard_name': 'Species B', },
-                'count': '2',
-                'comment': '',
-            },
-            {
-                'identifier': '1002',
-                'species': { 'standard_name': 'Species C', },
-                'count': '0',
-                'comment': '',
-            }
-        ]
+        expected = [{
+            'identifier': 'PT1000',
+            'species': {'name': 'Species A'},
+            'count': 10,
+            'comment': 'notes',
+        }, {
+            'identifier': 'PT1001',
+            'species': {'name': 'Species B'},
+            'count': 2,
+            'comment': '',
+        }, {
+            'identifier': 'PT1002',
+            'species': {'name': 'Species C'},
+            'count': 0,
+            'comment': '',
+        }]
         self.assertEqual(expected, self.parser.get_entries())

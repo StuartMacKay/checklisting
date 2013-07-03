@@ -2,6 +2,9 @@
 
 import json
 
+from multiprocessing import Process
+from scrapy.crawler import CrawlerProcess
+
 from scrapy.http import TextResponse, Request
 
 
@@ -49,3 +52,25 @@ def response_for_data(data, url='http://example.com', metadata=None):
     content = json.dumps(data)
     encoding = 'utf-8'
     return response_for_content(content, encoding, url=url, metadata=metadata)
+
+
+class RunCrawler():
+    """RunCrawler runs a crawler in a separate process.
+
+    Useful sources:
+    https://groups.google.com/forum/?fromgroups#!topic/scrapy-users/8zL8W3SdQBo
+    http://stackoverflow.com/questions/13437402/how-to-run-scrapy-from-within-a-python-script
+    """
+    def __init__(self, settings):
+        self.crawler = CrawlerProcess(settings)
+        self.crawler.configure()
+
+    def _crawl(self, spider):
+        self.crawler.crawl(spider)
+        self.crawler.start()
+        self.crawler.stop()
+
+    def crawl(self, spider):
+        p = Process(target=self._crawl, args=(spider,))
+        p.start()
+        p.join()

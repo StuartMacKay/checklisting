@@ -25,7 +25,7 @@ class ParseHTMLChecklistTestCase(TestCase):
 
                                 Sun Mar 24, 2013
 
-                            3:10 PMdata from the checklist web page
+                            3:10 PM
 
                             </h5>
                             <dl class="def-list">
@@ -52,15 +52,24 @@ class ParseHTMLChecklistTestCase(TestCase):
 
                                 </dd>
                             </dl>
+                            <dl class="def-list">
+                                <dt>Comments:</dt>
+                                <dd>
+
+                                    A comment.
+
+                                </dd>
+                            </dl>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
         """
-        self.content = response_for_content(self.content, 'utf-8', url=self.url)
-        self.parser = HTMLParser(self.content)
-        
+        self.response = response_for_content(self.content, 'utf-8',
+                                             url=self.url)
+        self.parser = HTMLParser(self.response)
+
     def test_get_attributes(self):
         """Verify all the attributes for a checklist can be extracted."""
         expected = {
@@ -69,14 +78,24 @@ class ParseHTMLChecklistTestCase(TestCase):
             u'Duration:': u'2 hour(s) 35 minute(s)',
             u'Distance:': u'2.0 kilometer(s)',
             u'Observers:': u'Stuart MacKay',
+            u'Comments:': u'A comment.',
         }
         actual = self.parser.get_attributes(self.parser.docroot)
+        self.assertEqual(expected, actual)
+
+    def test_get_source(self):
+        """Verify the observers names can be extracted from the page."""
+        expected = {
+            'count': 1,
+            'names': ['Stuart MacKay'],
+        }
+        actual = self.parser.get_observers()
         self.assertEqual(expected, actual)
 
     def test_get_protocol(self):
         """Verify the protocol can be extracted from the page."""
         expected = {
-            'type': 'TRV',
+            'name': 'Traveling',
             'duration_hours': 2,
             'duration_minutes': 35,
             'distance': 2000,
@@ -84,6 +103,21 @@ class ParseHTMLChecklistTestCase(TestCase):
         }
         actual = self.parser.get_protocol()
         self.assertEqual(expected, actual)
+
+    def test_get_default_activity(self):
+        """Verify the activity is extracted from the page."""
+        self.assertEqual(self.parser.default_activity,
+                         self.parser.get_activity())
+
+    def test_get_activity_from_protocl(self):
+        """Verify the activity is extracted from the protocol name."""
+        protocol = self.parser.activities.keys()[0]
+        activity = self.parser.activities[protocol][0]
+        self.content = self.content.replace('Traveling', protocol)
+        self.response = response_for_content(self.content, 'utf-8',
+                                             url=self.url)
+        self.parser = HTMLParser(self.response)
+        self.assertEqual(activity, self.parser.get_activity())
 
 
 class ParseHTMLEntryTestCase(TestCase):
@@ -153,15 +187,24 @@ class ParseHTMLEntryTestCase(TestCase):
             </td>
         </tr>
         """
-        self.content = response_for_content(self.content, 'utf-8', url=self.url)
+        self.content = response_for_content(self.content, 'utf-8',
+                                            url=self.url)
         self.parser = HTMLParser(self.content)
+
+    def test_extract_species(self):
+        """Verify the common name is extracted."""
+        expected = {
+            'name': 'Mallard',
+        }
+        actual = self.parser.get_entries()[0]['species']
+        self.assertEqual(expected, actual)
 
     def test_extract_detail(self):
         """Verify the age and sex can be extracted for an entry."""
         expected = [
-            {'age': 'AD', 'sex': 'M', 'count': 9},
-            {'age': 'AD', 'sex': 'F', 'count': 6},
-            {'age': 'JUV', 'sex': 'X', 'count': 8},
+            {'age': 'Adult', 'sex': 'Male', 'count': 9},
+            {'age': 'Adult', 'sex': 'Female', 'count': 6},
+            {'age': 'Juvenile', 'sex': 'Sex Unknown', 'count': 8},
         ]
         entry = self.parser.docroot.select('//tr[@class="spp-entry"]')
         actual = self.parser.get_entry_details(entry)

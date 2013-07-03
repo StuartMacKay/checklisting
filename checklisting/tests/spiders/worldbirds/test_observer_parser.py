@@ -34,4 +34,4 @@ class ObserverParserTestCase(TestCase):
 
     def test_submitted_by(self):
         """Verify the observer's name is extracted."""
-        self.assertEqual('Full Name', self.checklist['submitted_by'])
+        self.assertEqual('Full Name', self.checklist['source']['submitted_by'])

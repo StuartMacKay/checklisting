@@ -14,6 +14,8 @@ from scrapy import log
 from scrapy.spider import BaseSpider
 from scrapy.selector import HtmlXPathSelector
 
+from checklisting.spiders import CHECKLIST_FILE_FORMAT_VERSION, \
+    CHECKLIST_FILE_LANGUAGE
 from checklisting.exceptions import LoginException
 from checklisting.spiders.utils import save_json_data
 
@@ -110,6 +112,7 @@ class ChecklistParser(object):
         """
         self.docroot = HtmlXPathSelector(response)
         self.identifier = response.meta['identifiers'][0]
+        self.country = response.meta['country']
         self.url = response.url
 
     def get_checklist(self):
@@ -122,19 +125,57 @@ class ChecklistParser(object):
         rows = self.docroot.select(xpath).extract()
 
         day, month, year = rows[2].strip().split('-')
-        hour, minute = rows[3].split('-')[0].strip().split(':')
 
         return {
-            'identifier': self.identifier,
-            'source': 'WorldBirds',
-            'url': self.url,
+            'meta': {
+                'version': CHECKLIST_FILE_FORMAT_VERSION,
+                'language': CHECKLIST_FILE_LANGUAGE,
+            },
+            'identifier': self.country.upper() + str(self.identifier),
             'date': "%s-%s-%s" % (year, month, day),
-            'time': "%s:%s" % (hour, minute),
             'location': self.get_location(),
+            'source': self.get_source(),
             'protocol': self.get_protocol(),
-            'observers': [name.strip() for name in rows[-2].split(',')],
-            'observer_count': int(rows[5].strip()),
+            'comment': self.get_comment(),
+            'activity': rows[6].strip(),
+            'observers': self.get_observers(),
             'entries': self.get_entries()
+        }
+
+    def get_source(self):
+        """Get information about the checklist's source.
+
+        Returns:
+            dict: a dictionary containing the source fields.
+        """
+        return {
+            'name': 'WorldBirds',
+            'url': self.url,
+        }
+
+    def get_comment(self):
+        """Get any comments for the checklist.
+
+        Returns:
+            unicode: the comment extracted from the checklist.
+        """
+        xpath = '(//table[@class="PopupTable"])[1]/tr/td/text()'
+        rows = self.docroot.select(xpath).extract()
+        return rows[-3].strip()
+
+    def get_observers(self):
+        """Get the checklist observers.
+
+        Returns:
+            dict: a dictionary containing the names of the observers.
+        """
+        xpath = '(//table[@class="PopupTable"])[1]/tr/td/text()'
+        rows = self.docroot.select(xpath).extract()
+        names = [name.strip() for name in rows[-2].split(',')]
+
+        return {
+            'names': names,
+            'count': len(names),
         }
 
     def get_location(self):
@@ -166,7 +207,8 @@ class ChecklistParser(object):
         end_time = int(end_hour) * 60 + int(end_minute)
 
         return {
-            'type': 'TIM',
+            'name': 'Timed visit',
+            'time': '%s:%s' % (start_hour, start_minute),
             'duration_hours': (end_time - start_time) / 60,
             'duration_minutes': (end_time - start_time) % 60,
         }
@@ -184,10 +226,11 @@ class ChecklistParser(object):
        """
         xpath = '(//table[@class="TableThin"])[1]/tr'
         rows = self.docroot.select(xpath)[1:]
+        prefix = self.country.upper() + str(self.identifier)
         entries = []
         for idx, row in enumerate(rows):
             entry = self.get_entry(row)
-            entry['identifier'] = str(self.identifier * 1000 + idx)
+            entry['identifier'] = prefix + "%03d" % idx
             entries.append(entry)
         return entries
 
@@ -208,9 +251,9 @@ class ChecklistParser(object):
         # is returned.
 
         if len(columns) == 4:
-            count = '0'
+            count = 0
         else:
-            count = columns[1].strip()
+            count = int(columns[1].strip())
 
         return {
             'identifier': '',
@@ -235,7 +278,7 @@ class ChecklistParser(object):
         """
         columns = row.select('./td/text()').extract()
         return {
-            'standard_name': columns[0].strip(),
+            'name': columns[0].strip(),
         }
 
 
@@ -255,6 +298,8 @@ class LocationParser(object):
         """
         self.docroot = HtmlXPathSelector(response)
         self.checklist = response.meta['checklist']
+        self.identifier = response.meta['identifiers'][1]
+        self.country = response.meta['country']
 
     def get_checklist(self):
         """Get the checklist updated with the location details.
@@ -265,10 +310,11 @@ class LocationParser(object):
         xpath = '(//table[@class="PopupTable"])[1]/tr/td/text()'
         rows = self.docroot.select(xpath).extract()
         location = self.checklist['location']
+        location['identifier'] = self.country.upper() + str(self.identifier)
         location['country'] = rows[1].strip()
-        location['comment'] = rows[5].strip()
-        location['lat'] = rows[2].split(',')[0].strip()
-        location['lng'] = rows[2].split(',')[1].strip()
+        location['comment_en'] = rows[5].strip()
+        location['lat'] = float(rows[2].split(',')[0].strip())
+        location['lon'] = float(rows[2].split(',')[1].strip())
         return self.checklist
 
 
@@ -297,7 +343,9 @@ class ObserverParser(object):
         """
         xpath = '(//table[@class="PopupTable"])[1]/tr/td/text()'
         rows = self.docroot.select(xpath).extract()
-        self.checklist['submitted_by'] = rows[1].strip()
+        if not 'source' in self.checklist:
+            self.checklist['source'] = {}
+        self.checklist['source']['submitted_by'] = rows[1].strip()
         return self.checklist
 
 
@@ -333,7 +381,7 @@ class WorldBirdsSpider(BaseSpider):
 
     The following settings control the behaviour of the spider:
 
-    WORLDBIRDS_DOWNLOAD_DIR: the directory where the downloaded checklists
+    CHECKLISTING_DOWNLOAD_DIR: the directory where the downloaded checklists
     will be written in JSON format. The directory will be created if it does
     not exist.
 
@@ -381,7 +429,7 @@ class WorldBirdsSpider(BaseSpider):
         if country.lower() not in self.databases:
             raise ValueError("Sorry, %s is one of the countries that is not"
                              " (yet) supported by this crawler.")
-
+        self.country = country
         self.start_url = self.databases[country.lower()]
         self.server = self.start_url.split('/')[2]
         self.log("Downloading checklists from %s" % self.server, log.INFO)
@@ -402,7 +450,7 @@ class WorldBirdsSpider(BaseSpider):
         self.log("Fetching checklists added since %s" %
                  self.limit.strftime("%Y-%m-%d"), log.INFO)
 
-        self.directory = self.settings['WORLDBIRDS_DOWNLOAD_DIR']
+        self.directory = self.settings['CHECKLISTING_DOWNLOAD_DIR']
         if self.directory and not os.path.exists(self.directory):
             os.makedirs(self.directory)
         self.log("Writing checklists to %s" % self.directory, log.INFO)
@@ -467,7 +515,8 @@ class WorldBirdsSpider(BaseSpider):
                 yield Request(
                     url=url % (self.server, values[1]),
                     callback=self.parse_checklist,
-                    meta={'identifiers': values[1:]}
+                    meta={'identifiers': values[1:],
+                          'country': self.country}
                 )
 
     def parse_checklist(self, response):
@@ -482,6 +531,7 @@ class WorldBirdsSpider(BaseSpider):
         """
         checklist = self.checklist_parser(response).get_checklist()
         ids = response.meta['identifiers']
+        country = response.meta['country']
 
         url = "http://%s/worldbirds/getdata.php?a=LocationDetails&id=%s"
 
@@ -489,7 +539,9 @@ class WorldBirdsSpider(BaseSpider):
             url=url % (self.server, ids[1]),
             callback=self.parse_location,
             dont_filter=True,
-            meta={'identifiers': ids, 'checklist': checklist}
+            meta={'identifiers': ids,
+                  'checklist': checklist,
+                  'country': country}
         )
 
     def parse_location(self, response):
@@ -512,7 +564,9 @@ class WorldBirdsSpider(BaseSpider):
             url=url % (self.server, ids[2]),
             callback=self.parse_observer,
             dont_filter=True,
-            meta={'identifiers': ids, 'checklist': parser.get_checklist()}
+            meta={'identifiers': ids,
+                  'checklist': parser.get_checklist(),
+                  'country': self.country}
         )
 
     def parse_observer(self, response):
@@ -534,15 +588,15 @@ class WorldBirdsSpider(BaseSpider):
         The filename using the source, in this case 'worldbirds' and the
         checklist identifier so that the data is always written to the same
         file. The directory where the files are written is defined by the
-        setting WORLDBIRDS_DOWNLOAD_DIR. If the directory attribute is set to
-        None then the checklist is not saved (used for testing).
+        setting CHECKLISTING_DOWNLOAD_DIR. If the directory attribute is set
+        to None then the checklist is not saved (used for testing).
 
         The saved checklist is added to the list of checklists downloaded so
         far so it can be used to generate a status report once the spider has
         finished.
         """
         if self.directory:
-            source = checklist['source'].replace(' ', '-').lower()
+            source = checklist['source']['name'].replace(' ', '-').lower()
             path = os.path.join(self.directory, "%s-%s.json" % (
                 source, checklist['identifier']))
             save_json_data(path, checklist)
@@ -550,4 +604,4 @@ class WorldBirdsSpider(BaseSpider):
 
             self.log("Wrote %s: %s %s (%s)" % (
                 path, checklist['date'], checklist['location']['name'],
-                checklist['submitted_by']), log.INFO)
+                checklist['source']['submitted_by']), log.INFO)

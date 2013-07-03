@@ -29,10 +29,10 @@ file, checklisting/settings.py.
 # The password for authenticating with the SMTP host.
 #MAIL_PASS = ''
 
-# Parameters used the in the downloads integration test which runs each 
-# spider against a real site. Each entry contains the name of the spider
-# and a dictionary containing the arguments used to create a spider.
-#CHECKLISTING_DOWNLOADS_TEST = [
+# Parameters used the in the suite of tests which runs each crawlers to verify
+# the checklists can be downloaded from real sites. Each entry contains the
+# name of the spider and a dictionary containing the arguments used to run it.
+#CHECKLISTING_SITES_TEST = [
 #    ('ebird', {'region': '<code>'}),
 #    ('worldbirds', {'username': '<username>', 'password': '<password>', 'country': '<code>'}})
 #]

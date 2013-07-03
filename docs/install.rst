@@ -9,7 +9,7 @@ Checklisting is available from PyPI so you can install it using pip::
 However this uses the default settings so you will have to override them on
 the command-line when you run the crawlers::
 
-    scrapy crawl ebird -a region=PT-11 -s EBIRD_DOWNLOAD_DIR=.
+    scrapy crawl ebird -a region=PT-11 -s CHECKLISTING_DOWNLOAD_DIR=.
 
 This works if you only have a couple of changes that take a single value
 however for settings such as CHECKLISTING_STATUS_REPORT_RECIPIENTS (which

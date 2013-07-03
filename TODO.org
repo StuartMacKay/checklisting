@@ -1,9 +1,0 @@
-#+SEQ_TODO: TODO(t) STARTED(s) WAITING(w) | DONE(d) CANCELLED(c) DEFERRED(f)
-#+STARTUP: indent
-#+STARTUP: content
-
-This file is used for notes about tasks and things to do that have not (yet)
-been added to the issue tracker.
-
-* useful reading
-  + http://news.ycombinator.com/item?id=4367933

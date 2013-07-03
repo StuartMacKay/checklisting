@@ -25,13 +25,13 @@ class ParseRegionTestCase(TestCase):
         """Verify one request is generated for each location."""
         response = response_for_data([
             {
-                'locID': 'L0000001', 
+                'locID': 'L0000001',
                 'locName': 'Location1',
                 'lat': '',
                 'lng': '',
             },
             {
-                'locID': 'L0000002', 
+                'locID': 'L0000002',
                 'locName': 'Location2',
                 'lat': '',
                 'lng': '',
@@ -44,7 +44,7 @@ class ParseRegionTestCase(TestCase):
         """Verify the URL contains the ID for each location."""
         response = response_for_data([
             {
-                'locID': 'L0000001', 
+                'locID': 'L0000001',
                 'locName': 'Location1',
                 'lat': '',
                 'lng': '',
@@ -58,7 +58,7 @@ class ParseRegionTestCase(TestCase):
         """Verify the callbacks for parsing the location observations."""
         response = response_for_data([
             {
-                'locID': 'L0000001', 
+                'locID': 'L0000001',
                 'locName': 'Location1',
                 'lat': '',
                 'lng': '',
@@ -71,13 +71,13 @@ class ParseRegionTestCase(TestCase):
         """Verify one request is generated for each unique location."""
         response = response_for_data([
             {
-                'locID': 'L0000001', 
+                'locID': 'L0000001',
                 'locName': 'Location1',
                 'lat': '',
                 'lng': '',
             },
             {
-                'locID': 'L0000001', 
+                'locID': 'L0000001',
                 'locName': 'Location1',
                 'lat': '',
                 'lng': '',

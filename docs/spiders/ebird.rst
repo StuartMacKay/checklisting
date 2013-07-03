@@ -23,8 +23,8 @@ http://help.ebird.org/customer/portal/articles/973915-uploading-data-to-ebird#su
 
 In addition, three settings also control the behaviour of the crawler:
 
-    EBIRD_DOWNLOAD_DIR: the directory where the downloaded checklists will be
-    written in JSON format. The value defined in the settings uses the
+    CHECKLISTING_DOWNLOAD_DIR: the directory where the downloaded checklists
+    will be written in JSON format. The value defined in the settings uses the
     temporary used by python but it can be set to any path. Filenames use the
     name of the source and the checklist identifier so running the crawler
     multiple times will overwrite any existing files but will not destroy any

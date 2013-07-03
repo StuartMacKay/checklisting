@@ -2,6 +2,8 @@
 
 from unittest import TestCase
 
+from checklisting.spiders import CHECKLIST_FILE_FORMAT_VERSION, \
+    CHECKLIST_FILE_LANGUAGE
 from checklisting.spiders.ebird_spider import JSONParser
 from checklisting.tests.utils import response_for_data
 
@@ -19,12 +21,12 @@ class JSONParserTestCase(TestCase):
             'firstName': 'Name',
             'howMany': 1,
             'lastName': 'Surname',
-            'lat': 45.000000,
-            'lng': -45.000000,
+            'lat': 45.000001,
+            'lng': -45.000001,
             'locID': 'L0000001',
             'locName': 'Location 1',
             'locationPrivate': True,
-            'obsDt': '2013-03-27 09:00',
+            'obsDt': '2013-03-27',
             'obsID': 'OBS0000001',
             'obsReviewed': False,
             'obsValid': True,
@@ -35,7 +37,7 @@ class JSONParserTestCase(TestCase):
             'subnational1Name': 'Region',
             'subnational2Code': 'SN-02',
             'subnational2Name': 'County',
-        },{
+        }, {
             'checklistID': 'CL00002',
             'comName': 'Common Name',
             'countryCode': 'CC',
@@ -59,7 +61,7 @@ class JSONParserTestCase(TestCase):
             'subnational1Name': 'Region',
             'subnational2Code': 'SN-02',
             'subnational2Name': 'County',
-        },{
+        }, {
             'checklistID': 'CL00002',
             'comName': 'Common Name',
             'countryCode': 'CC',
@@ -118,26 +120,33 @@ class JSONParserTestCase(TestCase):
     def test_entry_ids(self):
         """Verify the ids of each checklist entry."""
         checklists = self.parser.get_checklists()
-        self.assertEqual('OBS0000001', checklists[0]['entries'][0]['identifier'])
-        self.assertEqual('OBS0000002', checklists[1]['entries'][0]['identifier'])
-        self.assertEqual('OBS0000003', checklists[1]['entries'][1]['identifier'])
+        self.assertEqual('OBS0000001',
+                         checklists[0]['entries'][0]['identifier'])
+        self.assertEqual('OBS0000002',
+                         checklists[1]['entries'][0]['identifier'])
+        self.assertEqual('OBS0000003',
+                         checklists[1]['entries'][1]['identifier'])
 
     def test_get_checklist(self):
         """Verify the complete checklist is extracted from the record.
 
-        Only the top-level fields are checked. The location is removed
-        as the fields are covered in the test_get_location test.
+        Only the top-level fields are checked. The location and prootcol are
+        removed as the fields are covered in the test_get_location and
+        test_get_protocol tests respectively.
         """
-        actual = self.parser.get_checklist(self.data[0])
+        actual = self.parser.get_checklist(self.data[1])
         del actual['location']
+        del actual['protocol']
+        del actual['source']
+        del actual['observers']
 
         expected = {
-            'identifier': 'S0000001',
+            'meta': {
+                'version': CHECKLIST_FILE_FORMAT_VERSION,
+                'language': CHECKLIST_FILE_LANGUAGE,
+            },
+            'identifier': 'S0000002',
             'date': '2013-03-27',
-            'time': '09:00',
-            'submitted_by': 'Name Surname',
-            'observers': ['Name Surname'],
-            'source': 'eBird',
         }
         self.assertEqual(expected, actual)
 
@@ -150,17 +159,48 @@ class JSONParserTestCase(TestCase):
             'county': 'County',
             'region': 'Region',
             'country': 'Country',
-            'lat': 45.000000,
-            'lon': -45.000000,
+            'lat': 45.000001,
+            'lon': -45.000001,
         }
         self.assertEqual(expected, actual)
+
+    def test_get_observers(self):
+        """Verify the observer name is extracted from the record."""
+        actual = self.parser.get_observers(self.data[0])
+        expected = {
+            'count': 1,
+            'names': ['Name Surname'],
+        }
+        self.assertEqual(expected, actual)
+
+    def test_get_source(self):
+        """Verify the source fields are extracted from the record."""
+        actual = self.parser.get_source(self.data[0])
+        expected = {
+            'submitted_by': 'Name Surname',
+            'name': 'eBird',
+        }
+        self.assertEqual(expected, actual)
+
+    def test_get_protocol(self):
+        """Verify the protocol fields are extracted from the record."""
+        actual = self.parser.get_protocol(self.data[1])
+        expected = {
+            'name': 'Incidental',
+            'time': '10:00',
+        }
+        self.assertEqual(expected, actual)
+
+    def test_protocol_not_set(self):
+        """Verify protocol is not included if not time is given."""
+        actual = self.parser.get_checklist(self.data[0])
+        self.assertFalse('protocol' in actual)
 
     def test_get_species(self):
         """Verify the species fields are extracted from the record."""
         actual = self.parser.get_species(self.data[0])
         expected = {
-            'standard_name': 'Common Name',
-            'common_name_en': 'Common Name',
+            'name': 'Common Name',
             'scientific_name': 'Scientific Name',
         }
         self.assertEqual(expected, actual)
@@ -171,8 +211,7 @@ class JSONParserTestCase(TestCase):
         expected = {
             'identifier': 'OBS0000001',
             'species': {
-                'standard_name': 'Common Name',
-                'common_name_en': 'Common Name',
+                'name': 'Common Name',
                 'scientific_name': 'Scientific Name',
             },
             'count': 1,
