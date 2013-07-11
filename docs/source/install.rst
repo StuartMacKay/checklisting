@@ -18,9 +18,9 @@ settings must be edited or more specifically you create a local_settings.py
 file which is used to override the default settings. The process is quite
 simple.
 
-1. First install the dependencies (scrapy)::
+1. First install the dependencies::
 
-   pip install scrapy
+       pip install scrapy
 
 2. Next download and unpack the package::
 
@@ -31,7 +31,8 @@ simple.
    otherwise it will either be downloaded to a sub-directory of the main temp
    directory, "<OS temp dir>/pip-build-<username>" or to the current directory.
 
-   You can download the package to any directory of your choosing using::
+   Alternatively, you can download the package to any directory of your
+   choosing using::
 
        pip install -d <dir> checklisting
 
@@ -39,20 +40,23 @@ simple.
 
        tar zxvf checklisting-<version>.tar.gz
 
+3. Configure the crawlers by editing the file, local_settings.py, found in the
+   root directory of the project and saving it to the checklisting sub-directory
+   where the main settings file, settings.py is located, e.g::
 
-3. Now edit the file local_settings.py in the root directory of the package to
-   specify the mail server and addresses to use for sending out status reports
-   when a crawler completes downloading checklists from a given source.
+       .../build/checklisting/checklisting/local_settings.py
 
-   There are other settings in checklisting/settings.py which you can override
-   in the local settings files but these should all have sane defaults.
-
-   Save the edited local_settings.py to the checklisting sub-directory (where
-   the settings.py file is located).
+   Most of the settings have sensible defaults, for example, download
+   observations for the past seven days, so the only settings that need to be
+   defined are those that specify the mail server and the email addresses that
+   are sent out when a crawler completes downloading observations from a given
+   source. This status report contains details of any errors or warnings and so
+   it's important to check it to see whether there are possible issues when
+   loading the checklists into a database.
 
 4. Finally build and install the package::
 
-    python setup.py install
+       python setup.py install
 
 
 Scrapyd

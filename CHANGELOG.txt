@@ -1,3 +1,16 @@
+Version 0.1b1
+-------------
+
+  * Added sphinx for document generation.
+  * Updated documentation, improving the README and adding longer descriptions
+    in the main documentation, also hosted on readthedocs.org.
+
+Version 0.1a5
+-------------
+
+  * Corrected errors in reStructuredText formatting.
+  * Updates install instructions to make them more readable.
+
 Version 0.1a4
 -------------
 
@@ -26,7 +39,6 @@ Version 0.1a3
   * Added support for local_settings.py to override scrapy settings.
   * Added a spider for downloading checklists for WorldBirds.
 
-
 Version 0.1a2
 -------------
 
@@ -34,7 +46,6 @@ Version 0.1a2
     limiting the number of simultaneous requests.
   * Simplified the arguments used to initialize the eBird spider by moving
     semi-static ones into the settings file.
-
 
 Version 0.1a1
 -------------

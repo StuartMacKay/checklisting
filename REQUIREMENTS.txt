@@ -1,2 +1,3 @@
-Scrapy==0.16.4
+git Scrapy==0.16.4
+Sphinx==1.2b1
 nose==0.16.4
