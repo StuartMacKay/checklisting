@@ -1,25 +1,29 @@
+=====
 eBird
------
-The crawler for eBird uses the official API:
+=====
+eBird has an API which provides access to records submitted to the database for
+up to the past 30 days. The records published through the API also include the
+checklist identifier which is used to scrape additional data, such as the
+protocol used, from the checklist web page.
 
-    https://confluence.cornell.edu/display/CLOISAPI/eBird+API+1.1
+
 
 and, optionally, scrapes data from the web page that displays the checklist on
-the eBird site, e.g. http://ebird.org/ebird/view/checklist?subID=S13500933
+the eBird site, e.g.
 since information such as the checklist protocol and breakdowns of counts by
 age and sex are not currently available through the API.
 
-The crawler is run using the crawl command-line tool:
+The crawler is run using the crawl command-line tool::
 
     scrapy crawl ebird -a region=PT-11
 
-where,
+The -a option is used by scrapy to pass key-value pairs to the crawler. The
+eBird API and websites are public so only the region code, e.g. PT-11 needs to
+be passed to the crawler. See the Resources section for links to a full list
+of the available region codes.
 
-    region  the region code used by Cornell to identify all the different
-            regions supported by the database, e.g. PT-11.
-
-A full list of region codes can be found in "Uploading Data to eBird",
-http://help.ebird.org/customer/portal/articles/973915-uploading-data-to-ebird#supplemental-documents
+Settings
+========
 
 In addition, three settings also control the behaviour of the crawler:
 
@@ -39,8 +43,18 @@ In addition, three settings also control the behaviour of the crawler:
     will also parse the checklist's web page.
 
 These settings can be changed by either editing checklisting/settings.py or
-changing the settings when the crawler is run. For example:
+changing the settings when the crawler is run. For example::
 
     scrapy crawl ebird -a region=PT-11 -s EBIRD_DURATION=30
 
+Resources
+---------
 
+API documentation can be found at https://confluence.cornell.edu/display/CLOISAPI/eBird+API+1.1
+
+An typical checklist web page can be found at http://ebird.org/ebird/view/checklist?subID=S13500933
+
+eBird publishes a full list of region codes in PDF format and as an Excel spreadsheet:
+
+* `State_Country_Codes_10_Nov_2011.pdf <http://help.ebird.org/customer/portal/kb_article_attachments/14685/original.pdf>`_
+* `State_Country_Codes_10_Nov_2011.xls <http://help.ebird.org/customer/portal/kb_article_attachments/14684/original.xls>`_

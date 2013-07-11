@@ -12,6 +12,7 @@ checklisting.egg-info/
 cover/
 dist/
 tmp/
+docs/_*
 
 .ropeproject
 
