@@ -15,8 +15,8 @@ can easily be analyzed. Crawlers are available for the following  databases:
 .. toctree::
    :maxdepth: 1
 
-   spiders/ebird
-   spiders/worldbirds
+   crawlers/ebird
+   crawlers/worldbirds
 
 .. include:: install.rst
 
