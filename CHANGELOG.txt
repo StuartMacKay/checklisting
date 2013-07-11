@@ -1,3 +1,8 @@
+Version 0.1b2
+-------------
+
+   * Fixed docs structure so it can be built by readthedocs.org.
+
 Version 0.1b1
 -------------
 

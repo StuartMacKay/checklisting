@@ -10,7 +10,7 @@ def read(filename):
 
 setup(
     name='checklisting',
-    version='0.1b1',
+    version='0.1b2',
     description='Web crawlers for downloading bird checklists.',
     long_description=read("README.rst"),
     author='Stuart MacKay',
