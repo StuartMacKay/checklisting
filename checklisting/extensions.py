@@ -14,8 +14,8 @@ class SpiderStatusReport(object):
     The report contains a list of the checklists downloaded.
 
     Reports are sent to the list of email addresses in the setting
-    SPIDER_STATUS_REPORT_RECIPIENTS. Set this to an empty list (the default)
-    in order to disable sending the reports.
+    REPORT_RECIPIENTS. Set this to an empty list (the default) in order to
+    disable sending the reports.
 
     The report is is sent as a regular (ASCII) email message and not in MIME
     format. Accented characters are removed by converting them into their
@@ -59,7 +59,8 @@ Time: %(time)s
         return u"".join([c for c in nkfd_form if not unicodedata.combining(c)])
 
     def spider_closed(self, spider):
-        recipients = spider.settings['SPIDER_STATUS_REPORT_RECIPIENTS']
+        recipients = [recipient.strip() for recipient in
+                      spider.settings['REPORT_RECIPIENTS'].split(',')]
 
         if not recipients:
             spider.log("No recipients listed to receive status report",

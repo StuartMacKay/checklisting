@@ -1,22 +1,98 @@
 """Scrapy settings."""
 
 import os
-import tempfile
+
+
+def get_env_variable(var_name, default=None):
+    """ Get the environment variable or raise an exception.
+
+    Args:
+        var_name (str): the name of the environment variable
+        default (str): the default value to use of the environment variable
+            is not set.
+
+    Returns:
+        str: the value for the specified environment variable.
+
+    Raises:
+        a NotConfigured exception if there is no environment variable
+        with the specified name and a default value was not given.
+    """
+    value = os.environ.get(var_name, default)
+    if value is None:
+        from scrapy.exceptions import NotConfigured
+        raise NotConfigured("Set the %s environment variable" % var_name)
+    return value
 
 
 BOT_NAME = 'checklisting'
 
 SPIDER_MODULES = ['checklisting.spiders']
+
 NEWSPIDER_MODULE = 'checklisting.spiders'
 
-LOG_LEVEL = 'INFO'
+
+#
+# Scrapy extensions
+#
+
+EXTENSIONS = {
+    'checklisting.extensions.SpiderStatusReport': 600,
+    'checklisting.extensions.ErrorLogger': 600,
+}
+
+
+#
+# Logging
+#
+
 LOG_STDOUT = True
-LOG_FILE = 'checklisting.log'
+LOG_LEVEL = get_env_variable('CHECKLISTING_LOG_LEVEL', 'INFO')
+LOG_FILE = get_env_variable('CHECKLISTING_LOG_FILE', 'checklisting.log')
+
+
+#
+# Mail server
+#
+# Settings for the SMTP server that is used to send out status reports.
+
+MAIL_FROM = get_env_variable('CHECKLISTING_MAIL_FROM', '')
+MAIL_HOST = get_env_variable('CHECKLISTING_MAIL_HOST', '')
+MAIL_PORT = int(get_env_variable('CHECKLISTING_MAIL_PORT', '25'))
+MAIL_USER = get_env_variable('CHECKLISTING_MAIL_USER', '')
+MAIL_PASS = get_env_variable('CHECKLISTING_MAIL_PASS', '')
+
+#
+# Status reports
+#
+# Each of the spiders generates a status report that list the checklists
+# downloaded along with any errors or warnings that occurred. The setting
+# REPORT_RECIPIENTS contains a comma separate list of the email addresses
+# that will receive a status report each time the spiders are run. Be sure
+# to also define the settings for the mail server used to send the report.
+
+REPORT_RECIPIENTS = get_env_variable('CHECKLISTING_REPORT_RECIPIENTS', '')
+
+
+#
+# General settings for the spiders
+#
+
+# Define a shared directory for crawler downloads. The crawlers use the name
+# of the source in file names so checklists from different sources will not
+# overwrite each other.
+DOWNLOAD_DIR = get_env_variable('CHECKLISTING_DOWNLOAD_DIR', '')
+
+# Download checklists from the last <n> days. A value of 7 (one week) offers
+# a reasonable trade-off between only fetching recent data while still
+# catching checklists that are added late.
+DURATION = int(get_env_variable('CHECKLISITNG_DURATION', '7'))
 
 # eBird redirects requests for the checklist web page to do some security
 # checks so the redirect middleware needs to be enabled.
 REDIRECT_ENABLED = True
 
+# Cookies are required for sites where the spider needs a user account.
 COOKIES_ENABLED = True
 
 # The maximum number of simultaneous requests that will be performed by the
@@ -29,59 +105,11 @@ COOKIES_ENABLED = True
 # not adversely affect performance.
 CONCURRENT_REQUESTS = 1
 
-EXTENSIONS = {
-    'checklisting.extensions.SpiderStatusReport': 600,
-    'checklisting.extensions.ErrorLogger': 600,
-}
-
-# Define a shared directory for crawler downloads. The crawlers use the name
-# of the source in file names so checklists from different sources will not
-# overwrite each other. Here checklists are written to python's tmp directory,
-# but any path can be used. It will be created if it does not exist.
-CHECKLISTING_DOWNLOAD_DIR = os.path.join(tempfile.gettempdir(), 'checklisting')
-
-# The list of email addresses where status reports are sent. Be sure to also
-# set the values for the SMTP server used to send the email message.
-CHECKLISTING_STATUS_REPORT_RECIPIENTS = []
-
 
 #
 # Settings for the eBird spider.
 #
 
-# Get the observations from the eBird API from the last <n> days. A value of
-# 7 (one week) offers a reasonable trade-off between only fetching recent data
-# while still catching checklists that are added late.
-EBIRD_DURATION = 7
-
 # Whether the checklist web page is also parsed to extract data (True) or
 # only the data from the API is used (False).
-EBIRD_INCLUDE_HTML = True
-
-#
-# Settings for the WorldBirds spider.
-#
-
-# Get the checklists for the last <n> days, including today. A value of 7
-# (one week) offers a reasonable trade-off between only fetching recent data
-# while still catching checklists that are added late.
-WORLDBIRDS_DURATION = 7
-
-#
-# Settings for tests
-#
-
-# A list of the spiders and arguments used to initialize them that are used
-# in the sites tests to verify the crawlers are working and the data are being
-# parsed correctly to create the checklists. See the file, local_settings.py
-# in the root project directory for more details.
-CHECKLISTING_SITES_TEST = []
-
-#
-# Override settings with local values
-#
-
-try:
-    from checklisting.local_settings import *
-except ImportError:
-    pass
+EBIRD_INCLUDE_HTML = bool(get_env_variable('EBIRD_INCLUDE_HTML', '1'))
