@@ -15,7 +15,7 @@ Validation Tests:
        2. source is set.
        3. source does not have leading/trailing whitespace.
 """
-from checklisting.tests.sites import checklists, ValidationTestCase
+from checklisting.tests.validation import checklists, ValidationTestCase
 
 
 class Source(ValidationTestCase):

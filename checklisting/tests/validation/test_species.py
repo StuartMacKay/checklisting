@@ -21,7 +21,7 @@ Validation Tests:
        7. the subspecies (third word) of the scientific name is lower case.
 
 """
-from checklisting.tests.sites import checklists, ValidationTestCase
+from checklisting.tests.validation import checklists, ValidationTestCase
 
 
 class Species(ValidationTestCase):

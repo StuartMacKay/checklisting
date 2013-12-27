@@ -14,7 +14,7 @@ Validation Tests:
        1. date is a string.
        2. date is in the format YYYY-MM-DD
 """
-from checklisting.tests.sites import checklists, ValidationTestCase
+from checklisting.tests.validation import checklists, ValidationTestCase
 
 
 class Checklist(ValidationTestCase):

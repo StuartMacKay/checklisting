@@ -30,7 +30,7 @@ Validation Tests:
     WorldBirdsProtocolName
         1. The protocol names matches the a default value used for WorldBirds.
 """
-from checklisting.tests.sites import checklists, ValidationTestCase
+from checklisting.tests.validation import checklists, ValidationTestCase
 
 
 class Protocol(ValidationTestCase):

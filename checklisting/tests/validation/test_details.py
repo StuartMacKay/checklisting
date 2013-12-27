@@ -14,7 +14,7 @@ Validation Tests:
           Sex Unknown.
 
 """
-from checklisting.tests.sites import checklists, ValidationTestCase
+from checklisting.tests.validation import checklists, ValidationTestCase
 
 
 class Details(ValidationTestCase):
