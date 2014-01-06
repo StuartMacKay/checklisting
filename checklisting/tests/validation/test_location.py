@@ -28,7 +28,7 @@ Validation Tests:
        1. latitude and longitude are floats.
 
 """
-from checklisting.tests.sites import checklists, ValidationTestCase
+from checklisting.tests.validation import checklists, ValidationTestCase
 
 
 class Location(ValidationTestCase):

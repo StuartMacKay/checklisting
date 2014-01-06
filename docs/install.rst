@@ -6,67 +6,77 @@ Checklisting is available from PyPI so you can install it using pip::
 
     pip install checklisting
 
-However this uses the default settings so you will have to override them on
-the command-line when you run the crawlers::
+Once installed the first step is to configure the runtime environment for
+the scrapy engine and the crawlers. Rather than creating configuration files
+or editing the package settings this is done using environment variables
+which makes it easier to deploy the package and to customize the environment
+each time the crawlers are run.
 
-    scrapy crawl ebird -a region=PT-11 -s CHECKLISTING_DOWNLOAD_DIR=.
+First tell the scrapy engine where to find the package settings, e.g. using
+the bash shell::
 
-This works if you only have a couple of changes that take a single value
-however for settings such as CHECKLISTING_STATUS_REPORT_RECIPIENTS (which
-defines the list of email addresses that status reports are sent to) the
-settings must be edited or more specifically you create a local_settings.py
-file which is used to override the default settings. The process is quite
-simple.
+    export SCRAPY_SETTINGS_MODULE=checklisting.settings
 
-1. First install the dependencies::
+The settings file then in turn loads the values used to configure the crawlers
+from the set of environment variables described here. (The settings for the
+scrapy engine can also be defined in a config file which should be placed
+the in the directory from where the crawlers are run. An example is included
+in the project).
 
-       pip install scrapy
+Next define the variables common to all the crawlers:
 
-2. Next download and unpack the package::
+    CHECKLISTING_DOWNLOAD_DIR: the directory where the crawlers will download
+    the checklists to. Filenames use the name of the source and the checklist
+    identifier so running the crawler multiple times will overwrite any
+    existing files but will not destroy any data. If this variable is not
+    set then the checklists will be downloaded to the current directory when
+    the crawlers are run.
 
-       pip install --no-deps --no-install checklisting
+    CHECKLISTING_DURATION: Download checklists for the previous <n> days. If
+    this is not set then checklists will be downloaded for the previous 7 days.
 
-   If you are using a virtualenv then the package can be found relative to the
-   environment's root directory: "<virtualenv-root>/build/checklisting"
-   otherwise it will either be downloaded to a sub-directory of the main temp
-   directory, "<OS temp dir>/pip-build-<username>" or to the current directory.
+    CHECKLISTING_REPORT_RECIPIENTS: When each crawler is run a status report
+    is generated listing the checklists that were downloaded along with any
+    errors or warnings encountered. This variable contains a comma-separated
+    list of email addresses that the report will be sent to. If this is not
+    set then the default value is an empty list and no reports will be sent.
 
-   Alternatively, you can download the package to any directory of your
-   choosing using::
+If status reports are being sent out then the following variables must also
+be defined:
 
-       pip install -d <dir> checklisting
+    CHECKLISTING_MAIL_HOST: the name of the SMTP server used to send the
+    status reports.
 
-   then unpack the package using::
+    CHECKLISTING_MAIL_PORT: the port number for the SMTP server. If not set
+    then the default port number is 25.
 
-       tar zxvf checklisting-<version>.tar.gz
+    CHECKLISTING_MAIL_USER: the username of the account on the mail server.
 
-3. Configure the crawlers by editing the file, local_settings.py, found in the
-   root directory of the project and saving it to the checklisting sub-directory
-   where the main settings file, settings.py is located, e.g::
+    CHECKLISTING_MAIL_PASS: the password for the account on the mail server.
 
-       .../build/checklisting/checklisting/local_settings.py
+    CHECKLISTING_MAIL_FROM: the from address used to indicate who sent the
+    status report. If not defined then an empty string is used however it is
+    likely that the SMTP server will require this to be set to either the
+    accounts main email address or at least to a domain known to the server
+    in order to avoid having the email classified as SPAM.
 
-   Most of the settings have sensible defaults, for example, download
-   observations for the past seven days, so the only settings that need to be
-   defined are those that specify the mail server and the email addresses that
-   are sent out when a crawler completes downloading observations from a given
-   source. This status report contains details of any errors or warnings and so
-   it's important to check it to see whether there are possible issues when
-   loading the checklists into a database.
+Logging is handled by:
 
-4. Finally build and install the package::
+    CHECKLISTING_LOG_LEVEL: The level at which messages are logged, either
+    'CRITICAL', 'ERROR', 'WARNING', 'INFO' or 'DEBUG'. If the variable is not
+    set then a default value of 'INFO' is used. The level can also be set on
+    the command line when the crawler is run using the --loglevel or -L option.
 
-       python setup.py install
+    CHECKLISTING_LOG_FILE: The path to the file where the log messages are
+    written. If the variable is not set a default path of 'checklisting.log'
+    is used and the file will be written to the directory from where the
+    crawlers are run. This can also be set when the crawler is run using the
+    --logfile command line option.
 
+Next are the variables used to configure the individual crawlers. Currently
+only the eBird crawler has a specific configuration parameter:
 
-Scrapyd
--------
-To install the crawlers in a scrapy daemon, repeat the previous steps but omit
-the final install (Step 4). Instead edit the scrapy config file, scrapy.cfg in
-the package directory and in the [deploy] section change 'url' to the URL of
-your scrapy server. You can then deploy the crawlers using::
-
-    scrapy deploy
-
-For more information on installing and managing a scrapyd server please see
-the docs at http://scrapyd.readthedocs.org/en/latest/.
+    EBIRD_INCLUDE_HTML: whether checklists downloaded from eBird should also
+    scrape data from the checklist web page. The eBird API provides basic
+    information for each observation however the checklist web page also has
+    information on subspecies, the names of observers, any comments, etc.

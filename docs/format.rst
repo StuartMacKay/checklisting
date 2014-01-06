@@ -18,7 +18,7 @@ A typical checklist has the following structure. ::
     {
         "meta": {
             "version": 1,
-            "language: "en",
+            "language": "en",
         },
         "identifier": "S1234567",
         "date": "2013-07-05",
@@ -69,7 +69,7 @@ A typical checklist has the following structure. ::
                     "name": "Gannet",
                 },
                 "count": 45,
-                "comment": "Flying east"
+                "comment": "Flying east",
                 "details": [
                     {
                         "age": "Adult",

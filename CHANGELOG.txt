@@ -1,7 +1,31 @@
+Version 0.1
+------
+
+  * Added scripts to run the site tests for each crawler. This makes it
+    easier to pass in the parameters for the site to be crawled rather than
+    defining them in the settings.
+  * Split the requirements into separate files for development, staging and
+    production so packages used for testing are kept out of production
+    installs.
+  * Configuring the crawlers is now done through environment variables rather
+    than a local settings file. This makes it much easier to install and run
+    the crawlers, particularly from the most common use-case of calling them
+    from cron or a similar scheduler.
+  * Removed the scrapy project file since the settings file will typically be
+    set using an environment variable.
+  * Fixed the version of scrapy to use, to 0.16.4 for now, since there are
+    (distracting), deprecated calls when using the latest version (0.20.2).
+  * Updated the logging so records found only on the web page for an eBird
+    checklist are only reported as warnings when the logging level is set to
+    DEBUG. This avoids any confusion in production since the warnings are only
+    used to debug issues with the eBird API.
+  * Fixed bugs caused by unexpected missing fields when downloading checklists
+    from eBird.
+
 Version 0.1b2
 -------------
 
-   * Fixed docs structure so it can be built by readthedocs.org.
+  * Fixed docs structure so it can be built by readthedocs.org.
 
 Version 0.1b1
 -------------

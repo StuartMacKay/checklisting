@@ -36,11 +36,11 @@ class StartRequestsTestCase(TestCase):
 
     def test_duration(self):
         """Verify the number of days to fetch observations for is set."""
-        self.assertEqual(settings.EBIRD_DURATION, self.spider.duration)
+        self.assertEqual(settings.DURATION, self.spider.duration)
 
     def test_directory(self):
         """Verify the directory where checklists are saved is set."""
-        self.assertEqual(settings.CHECKLISTING_DOWNLOAD_DIR,
+        self.assertEqual(settings.DOWNLOAD_DIR,
                          self.spider.directory)
 
     def test_include_html(self):

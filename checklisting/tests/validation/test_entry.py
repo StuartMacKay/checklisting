@@ -13,7 +13,7 @@ Validation Tests:
        1. comment is a unicode string.
 
 """
-from checklisting.tests.sites import checklists, ValidationTestCase
+from checklisting.tests.validation import checklists, ValidationTestCase
 
 
 class Entry(ValidationTestCase):

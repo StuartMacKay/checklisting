@@ -15,7 +15,7 @@ Validation Tests:
        2. each observer name is a string.
        3. each observer name does not have leading/trailing whitespace.
 """
-from checklisting.tests.sites import checklists, ValidationTestCase
+from checklisting.tests.validation import checklists, ValidationTestCase
 
 
 class Observers(ValidationTestCase):

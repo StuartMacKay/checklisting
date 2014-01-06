@@ -1,7 +1,8 @@
 """Extensions for customizing scrapy."""
 
 import datetime
-import unicodedata
+
+from unidecode import unidecode
 
 from scrapy import log
 from scrapy import signals
@@ -14,16 +15,12 @@ class SpiderStatusReport(object):
     The report contains a list of the checklists downloaded.
 
     Reports are sent to the list of email addresses in the setting
-    SPIDER_STATUS_REPORT_RECIPIENTS. Set this to an empty list (the default)
-    in order to disable sending the reports.
+    REPORT_RECIPIENTS. Set this to an empty list (the default) in order to
+    disable sending the reports.
 
     The report is is sent as a regular (ASCII) email message and not in MIME
     format. Accented characters are removed by converting them into their
-    un-accented equivalents (where possible). However the conversion process
-    is relatively simple and not all characters may be changed so the message
-    is encoded as UTF-8. Some characters may not display correctly as a result.
-    This does not affect the contents of the checklists which are downloaded
-    and encoded as UTF-8 strings so all characters are preserved.
+    un-accented equivalents using unidecode.
     """
 
     template = """Spider: %(spider)s
@@ -54,12 +51,9 @@ Time: %(time)s
                                 signal=signals.spider_closed)
         return extension
 
-    def remove_accents(self, input_str):
-        nkfd_form = unicodedata.normalize('NFKD', unicode(input_str))
-        return u"".join([c for c in nkfd_form if not unicodedata.combining(c)])
-
     def spider_closed(self, spider):
-        recipients = spider.settings['SPIDER_STATUS_REPORT_RECIPIENTS']
+        recipients = [recipient.strip() for recipient in
+                      spider.settings['REPORT_RECIPIENTS'].split(',')]
 
         if not recipients:
             spider.log("No recipients listed to receive status report",
@@ -85,15 +79,15 @@ Time: %(time)s
         if checklists:
             summary = []
             for checklist in checklists:
-                if 'protocol' in checklist:
+                if 'protocol' in checklist and 'time' in checklist['protocol']:
                     time = checklist['protocol']['time']
                 else:
                     time = '--:--'
                 summary.append("%s %s, %s (%s)" % (
                     checklist['date'],
                     time,
-                    self.remove_accents(checklist['location']['name']),
-                    self.remove_accents(checklist['submitted_by'])
+                    unidecode(checklist['location']['name']),
+                    unidecode(checklist['source']['submitted_by'])
                 ))
             context['checklists'] = '\n'.join(summary).encode('utf-8')
 
@@ -116,18 +110,20 @@ Time: %(time)s
             summary = []
 
             for checklist, messages in warnings:
-                if 'protocol' in checklist:
+                if 'protocol' in checklist and 'time' in checklist['protocol']:
                     time = checklist['protocol']['time']
                 else:
                     time = '--:--'
                 summary.append("%s %s, %s (%s)" % (
                     checklist['date'],
                     time,
-                    self.remove_accents(checklist['location']['name']),
-                    self.remove_accents(checklist['submitted_by'])
+                    unidecode(checklist['location']['name']),
+                    unidecode(checklist['source']['submitted_by'])
                 ))
+                summary.append("API: %s" % checklist['source']['api'])
+                summary.append("URL: %s" % checklist['source']['url'])
                 summary.extend(messages)
-                summary.append('\n')
+                summary.append('')
 
             context['warnings'] = '\n'.join(summary).encode('utf-8')
 
