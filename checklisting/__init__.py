@@ -1,6 +1,6 @@
 """A Scrapy project for downloading checklists from on-line databases."""
 
-VERSION = (0, 1, 0, 'b2')
+VERSION = (0, 1, 0, 'final')
 
 
 def get_version():
