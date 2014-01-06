@@ -3,6 +3,9 @@ import os
 from setuptools import setup, find_packages
 
 
+version = __import__('checklisting').get_version()
+
+
 def read(filename):
     with open(os.path.join(os.path.dirname(__file__), filename)) as fp:
         return fp.read()
@@ -10,7 +13,7 @@ def read(filename):
 
 setup(
     name='checklisting',
-    version='0.1b2',
+    version=version,
     description='Web crawlers for downloading bird checklists.',
     long_description=read("README.rst"),
     author='Stuart MacKay',
