@@ -120,8 +120,10 @@ Time: %(time)s
                     unidecode(checklist['location']['name']),
                     unidecode(checklist['source']['submitted_by'])
                 ))
+                summary.append("API: %s" % checklist['source']['api'])
+                summary.append("URL: %s" % checklist['source']['url'])
                 summary.extend(messages)
-                summary.append('\n')
+                summary.append('')
 
             context['warnings'] = '\n'.join(summary).encode('utf-8')
 

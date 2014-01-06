@@ -549,6 +549,7 @@ class EBirdSpider(BaseSpider):
         """
         checklists = self.api_parser(response).get_checklists()
         for checklist in checklists:
+            checklist['source']['api'] = response.url
             if self.include_html:
                 url = self.checklist_url % checklist['identifier']
                 yield Request(url, callback=self.parse_checklist,
@@ -705,10 +706,11 @@ class EBirdSpider(BaseSpider):
         for name, counts in index.items():
             for count, entries in counts.items():
                 if len(entries) > 1:
-                    warnings.append(
-                        "Could not update entry. There are %s entries that"
-                        " match: species=%s; count=%d." % (
-                            len(entries), name, count))
+                    message = "Could not update record from API. There are" \
+                              " %s records that match: species=%s; count=%d." \
+                              % (len(entries), name, count)
+                    warnings.append(message)
+                    self.log(message)
 
         for entry in updates:
             key = entry['species']['name'].split('(')[0].strip()
@@ -746,8 +748,12 @@ class EBirdSpider(BaseSpider):
                         target['details'].append(detail.copy())
 
             if added:
-                warnings.append("Added new entry: species=%s; count=%d." % (
-                    entry['species']['name'], entry['count']))
+                message = "Web page contains record missing from API:" \
+                          " species=%s; count=%d." \
+                          % (entry['species']['name'], entry['count'])
+                if self.settings['LOG_LEVEL'] == 'DEBUG':
+                    warnings.append(message)
+                self.log(message)
 
         return merged, warnings
 
