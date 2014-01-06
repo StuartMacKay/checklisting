@@ -23,8 +23,8 @@ setup(
     packages=find_packages(),
     keywords='eBird worldbirds web crawler birds checklists',
     classifiers=[
-        "Development Status :: 3 - Alpha",
-        "Environment :: Console",
+        "Development Status :: 4 - Beta",
+        "Environment :: Web Environment",
         "Intended Audience :: Science/Research",
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
         "Operating System :: OS Independent",
@@ -33,6 +33,6 @@ setup(
         "Topic :: Text Processing :: Filters",
     ],
     install_requires=[
-        'scrapy',
+        'scrapy == 0.16.4',
     ],
 )
