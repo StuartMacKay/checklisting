@@ -79,7 +79,7 @@ Time: %(time)s
         if checklists:
             summary = []
             for checklist in checklists:
-                if 'protocol' in checklist:
+                if 'protocol' in checklist and 'time' in checklist['protocol']:
                     time = checklist['protocol']['time']
                 else:
                     time = '--:--'
@@ -110,7 +110,7 @@ Time: %(time)s
             summary = []
 
             for checklist, messages in warnings:
-                if 'protocol' in checklist:
+                if 'protocol' in checklist and 'time' in checklist['protocol']:
                     time = checklist['protocol']['time']
                 else:
                     time = '--:--'

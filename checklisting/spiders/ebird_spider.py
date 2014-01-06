@@ -327,8 +327,11 @@ class HTMLParser(object):
             list(str): the observers, excluding the person who submitted the
                 checklist.
         """
+        try:
+            count = int(self.attributes.get('Party Size:', '0'))
+        except ValueError:
+            count = 0
 
-        count = int(self.attributes.get('Party Size:', '0'))
         names = remove_whitespace(
             self.attributes.get('Observers:', '').split(','))
 
@@ -690,10 +693,14 @@ class EBirdSpider(BaseSpider):
 
         for entry in merged:
             key = entry['species']['name'].split('(')[0].strip()
+            count = entry['count']
             if key in index:
-                index[key][entry['count']].append(entry)
+                if count in index[key]:
+                    index[key][count].append(entry)
+                else:
+                    index[key][count] = [entry]
             else:
-                index[key] = {entry['count']: [entry]}
+                index[key] = {count: [entry]}
 
         for name, counts in index.items():
             for count, entries in counts.items():
