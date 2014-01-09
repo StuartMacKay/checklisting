@@ -34,5 +34,6 @@ setup(
     ],
     install_requires=[
         'scrapy == 0.16.4',
+        'unidecode',
     ],
 )
