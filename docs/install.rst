@@ -80,3 +80,27 @@ only the eBird crawler has a specific configuration parameter:
     scrape data from the checklist web page. The eBird API provides basic
     information for each observation however the checklist web page also has
     information on subspecies, the names of observers, any comments, etc.
+
+Here is this script that is used to run the crawlers for Birding Lisboa from
+cron::
+
+    #!/bin/bash
+
+    export SCRAPY_SETTINGS_MODULE=checklisting.settings
+
+    export CHECKLISTING_LOG_LEVEL=INFO
+
+    export CHECKLISTING_DOWNLOAD_DIR=/tmp/birdinglisboa
+
+    export CHECKLISTING_MAIL_FROM=crawlers@birdinglisboa.com
+    export CHECKLISTING_MAIL_HOST=mail.example.com
+    export CHECKLISTING_MAIL_USER=<user>
+    export CHECKLISTING_MAIL_PASS=<password>
+
+    export CHECKLISTING_REPORT_RECIPIENTS=admins@birdinglisboa.com
+
+    source /home/birdinglisboa/venv/bin/activate
+    cd /home/birdinglisboa
+
+    scrapy crawl ebird -a region=PT-11
+    scrapy crawl ebird -a region=PT-15
