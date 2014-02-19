@@ -329,14 +329,15 @@ not exceed it.
 Future Changes
 --------------
 The current format (version 1) covers the data available from the first two
-sources for which crawlers are available, namely eBird and WorldBirds (which
-has a number of different databases for different countries). As more sources
-are added then the format is likely to change, though hopefully this will be
-the addition of new fields rather than changes to the ones documented above.
+sources for which crawlers are available, namely eBird and WorldBirds (the
+latter has a number of different databases for different countries). As more
+sources are added then the format is likely to change, though hopefully this
+will be the addition of new fields rather than changes to the ones documented
+above.
 
 From the current sources, all the available information is extracted, except
 the breeding status field from eBird. This was omitted because an earlier
-version of checklisting used codes for fields such as the protocol names and
-it was not clear how to incorporate the breeding status. With the recent move
-to simply use the name given in the source, adding the breeding status is a
-simple change and will likely happen sooner rather than later.
+version of checklists_scrapers used codes for fields such as the protocol names
+and it was not clear how to incorporate the breeding status. With the recent
+move to simply use the name given in the source, adding the breeding status is
+a simple change and will likely happen sooner rather than later.

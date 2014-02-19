@@ -1,5 +1,5 @@
 ========
-Crawling
+Scraping
 ========
 
 Downloading the checklists from a database is performed using the scrapy
@@ -21,7 +21,7 @@ dropped.
 See the docs for each crawler to get a list of the command line arguments.
 
 If you have defined the settings for a mail server and the setting
-CHECKLISTING_REPORT_RECIPIENTS then a status report will be sent out each time
+CHECKLISTS_REPORT_RECIPIENTS then a status report will be sent out each time
 the crawlers are run. The report contains a list of the checklist downloaded
 along with an errors (complete with stack traces) and any warnings::
 
@@ -29,7 +29,7 @@ along with an errors (complete with stack traces) and any warnings::
     Date: 03 Jan 2014
     Time: 11:00
 
-    -------------------------
+    ----------------birdinglisboa---------
       Checklists downloaded
     -------------------------
     2013-12-27 09:59, Jardim Botanico da Universidade de Lisboa
@@ -53,11 +53,11 @@ along with an errors (complete with stack traces) and any warnings::
     --- <exception caught here> ---
       File "/home/birdinglisboa/venv/local/lib/python2.7/site-packages/twisted/internet/defer.py", line 577, in _runCallbacks
         current.result = callback(current.result, *args, **kw)
-      File "/home/birdinglisboa/venv/local/lib/python2.7/site-packages/checklisting/spiders/ebird_spider.py", line 585, in parse_checklist
+      File "/home/birdinglisboa/venv/local/lib/python2.7/site-packages/checklists_scrapers/spiders/ebird_spider.py", line 585, in parse_checklist
         checklist = self.merge_checklists(original, update)
-      File "/home/birdinglisboa/venv/local/lib/python2.7/site-packages/checklisting/spiders/ebird_spider.py", line 602, in merge_checklists
+      File "/home/birdinglisboa/venv/local/lib/python2.7/site-packages/checklists_scrapers/spiders/ebird_spider.py", line 602, in merge_checklists
         original['entries'], update['entries'])
-      File "/home/birdinglisboa/venv/local/lib/python2.7/site-packages/checklisting/spiders/ebird_spider.py", line 695, in merge_entries
+      File "/home/birdinglisboa/venv/local/lib/python2.7/site-packages/checklists_scrapers/spiders/ebird_spider.py", line 695, in merge_entries
         if count in key[index]:
     exceptions.TypeError: string indices must be integers
 
