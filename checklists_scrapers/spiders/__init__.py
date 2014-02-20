@@ -1,4 +1,4 @@
-"""Scrapy crawlers for each on-line database."""
+"""Scrapy scrapers for each on-line database."""
 
 # The version of the JSON data structure used to represent the checklist.
 CHECKLIST_FILE_FORMAT_VERSION = 1

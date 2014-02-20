@@ -36,7 +36,7 @@ generate annual reports.
 
 A similar database could be used for any purpose - analysing observations
 for conservation, environmental management or education. Aggregating the
-observations from multiple databases with the crawlers makes this task a
+observations from multiple databases with the scrapers makes this task a
 lot easier.
 
 Installing & Configuring
@@ -46,20 +46,20 @@ easy_install::
 
     pip install checklists_scrapers
 
-The crawlers are built using the scrapy engine which uses settings, in the same
+The scrapers are built using the scrapy engine which uses settings, in the same
 way as Django, for configuration and runtime values. The settings file is
 configured to initialize its values from environment variables. That makes it
-easy to configure the crawlers, particularly for the most common use-case,
+easy to configure the scrapers, particularly for the most common use-case,
 running them from a scheduler such as cron.
 
-The only required setting is to tell scrapy (the engine used by the crawlers)
+The only required setting is to tell scrapy (the engine used by the scrapers)
 the path to the settings module::
 
     export SCRAPY_SETTINGS_MODULE=checklists_scrapers.settings
 
 The remaining settings have sensible defaults so only those that are
 installation dependent, such as the mail server used for sending out status
-reports. Here is this script that is used to run the crawlers for Birding
+reports. Here is this script that is used to run the scrapers for Birding
 Lisboa from cron::
 
     #!/bin/bash
@@ -84,7 +84,7 @@ Lisboa from cron::
     scrapy crawl ebird -a region=PT-11
     scrapy crawl ebird -a region=PT-15
 
-The settings can also be defined when the crawlers are run using the -S
+The settings can also be defined when the scrapers are run using the -S
 option::
 
     scrapy crawl ebird -a region=PT-15 -s LOG_LEVEL=DEBUG
@@ -94,7 +94,7 @@ settings are involved.
 
 NOTE: the environment variables use a prefix "CHECKLISTS" as a namespace
 to avoid interfering with any other variables. When the setting is defined
-using the -s option when running the crawlers, this prefix must be dropped.
+using the -s option when running the scrapers, this prefix must be dropped.
 
 NOTE: CHECKLISTS_REPORT_RECIPIENTS is a comma-separated list of one or more
 email addresses. The default value is an empty string so no status reports
@@ -112,7 +112,7 @@ Everything is now ready to run.
 Scraping
 --------
 The arguments passed to the scrapers on the command line specify value such as
-which region to download observations from and login details for crawlers 
+which region to download observations from and login details for scrapers
 that need an account to access the data::
 
     scrapy crawl ebird -a region=PT-11
@@ -124,7 +124,7 @@ settings.
 
 If you have defined the settings for a mail server and the setting
 CHECKLISTS_REPORT_RECIPIENTS then a status report will be sent out each time
-the crawlers are run. If the LOG_LEVEL is set to 'DEBUG' the report is also
+the scrapers are run. If the LOG_LEVEL is set to 'DEBUG' the report is also
 written to the directory where the checklists are downloaded to. The report
 contains a list of the checklist downloaded along with an errors (complete with
 stack traces) and any warnings::

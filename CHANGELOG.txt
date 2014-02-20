@@ -9,12 +9,12 @@ Version 0.1
   * Changes the prefix used on the environment variables from "CHECKLISTING"
     to "CHECKLISTS" to minimise the number that must be set when used the
     scrapers with the django-checklists app.
-  * Added scripts to run the site tests for each crawler. This makes it
-    easier to pass in the parameters for the site to be crawled rather than
+  * Added scripts to run the site tests for each scraper. This makes it
+    easier to pass in the parameters for the site to be scraped rather than
     defining them in the settings.
-  * Configuring the crawlers is now done through environment variables rather
+  * Configuring the scrapers is now done through environment variables rather
     than a local settings file. This makes it much easier to install and run
-    the crawlers, particularly from the most common use-case of calling them
+    the scrapers, particularly from the most common use-case of calling them
     from cron or a similar scheduler.
   * Removed the scrapy project file since the settings file will typically be
     set using an environment variable.

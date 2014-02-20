@@ -100,7 +100,7 @@ REPORT_RECIPIENTS = get_env_variable('CHECKLISTS_REPORT_RECIPIENTS', '')
 # General settings for the spiders
 #
 
-# Define a shared directory for crawler downloads. The crawlers use the name
+# Define a shared directory for scraper downloads. The scrapers use the name
 # of the source in file names so checklists from different sources will not
 # overwrite each other.
 DOWNLOAD_DIR = get_env_variable('CHECKLISTS_DOWNLOAD_DIR', '.')

@@ -11,35 +11,35 @@ or easy_install::
     easy_install checklists_scrapers
 
 Once installed the first step is to configure the runtime environment for
-the scrapy engine and the crawlers. Rather than creating configuration files
+the scrapy engine and the scrapers. Rather than creating configuration files
 or editing the package settings this is done using environment variables
 which makes it easier to deploy the package and to customize the environment
-each time the crawlers are run.
+each time the scrapers are run.
 
 First tell the scrapy engine where to find the package settings, e.g. using
 the bash shell::
 
     export SCRAPY_SETTINGS_MODULE=checklists_scrapers.settings
 
-The settings file then in turn loads the values used to configure the crawlers
+The settings file then in turn loads the values used to configure the scrapers
 from the set of environment variables described here. (The settings for the
 scrapy engine can also be defined in a config file which should be placed
-the in the directory from where the crawlers are run. An example is included
+the in the directory from where the scrapers are run. An example is included
 in the project).
 
-Next define the variables common to all the crawlers:
+Next define the variables common to all the scrapers:
 
-    CHECKLISTS_DOWNLOAD_DIR: the directory where the crawlers will download
+    CHECKLISTS_DOWNLOAD_DIR: the directory where the scrapers will download
     the checklists to. Filenames use the name of the source and the checklist
-    identifier so running the crawler multiple times will overwrite any
+    identifier so running the scraper multiple times will overwrite any
     existing files but will not destroy any data. If this variable is not
     set then the checklists will be downloaded to the current directory when
-    the crawlers are run.
+    the scrapers are run.
 
     CHECKLISTS_DURATION: Download checklists for the previous <n> days. If
     this is not set then checklists will be downloaded for the previous 7 days.
 
-    CHECKLISTS_REPORT_RECIPIENTS: When each crawler is run a status report
+    CHECKLISTS_REPORT_RECIPIENTS: When each scraper is run a status report
     is generated listing the checklists that were downloaded along with any
     errors or warnings encountered. This variable contains a comma-separated
     list of email addresses that the report will be sent to. If this is not
@@ -92,23 +92,23 @@ Logging is handled by:
     CHECKLISTS_LOG_LEVEL: The level at which messages are logged, either
     'CRITICAL', 'ERROR', 'WARNING', 'INFO' or 'DEBUG'. If the variable is not
     set then a default value of 'INFO' is used. The level can also be set on
-    the command line when the crawler is run using the --loglevel or -L option.
+    the command line when the scraper is run using the --loglevel or -L option.
 
     CHECKLISTS_LOG_FILE: The path to the file where the log messages are
     written. If the variable is not set a default path of
     'checklists_scrapers.log' is used and the file will be written to the
-    directory from where the crawlers are run. This can also be set when the
-    crawler is run using the --logfile command line option.
+    directory from where the scrapers are run. This can also be set when the
+    scraper is run using the --logfile command line option.
 
-Next are the variables used to configure the individual crawlers. Currently
-only the eBird crawler has a specific configuration parameter:
+Next are the variables used to configure the individual scrapers. Currently
+only the eBird scraper has a specific configuration parameter:
 
     EBIRD_INCLUDE_HTML: whether checklists downloaded from eBird should also
     scrape data from the checklist web page. The eBird API provides basic
     information for each observation however the checklist web page also has
     information on subspecies, the names of observers, any comments, etc.
 
-Here is this script that is used to run the crawlers for Birding Lisboa from
+Here is this script that is used to run the scrapers for Birding Lisboa from
 cron::
 
     #!/bin/bash
@@ -131,3 +131,4 @@ cron::
 
     scrapy crawl ebird -a region=PT-11
     scrapy crawl ebird -a region=PT-15
+

@@ -5,22 +5,22 @@
 
 Welcome to checklists_scrapers' documentation!
 ==============================================
-Checklists_scrapers is a series of crawlers that can be used to download
+Checklists_scrapers is a series of scrapers that can be used to download
 records from various on-line databases available for recording bird
-observations. While the databases allow records to be exported the crawlers are
+observations. While the databases allow records to be exported the scrapers are
 designed to create feeds containing the most recently added checklists. The
-crawlers all use the same :doc:`format <format>` for the downloaded data so the
-aggregated data can easily be analyzed. Crawlers are available for the
+scrapers all use the same :doc:`format <format>` for the downloaded data so the
+aggregated data can easily be analyzed. Scrapers are available for the
 following databases:
 
 .. include:: install.rst
-.. include:: crawling.rst
+.. include:: scraping.rst
 
 .. toctree::
    :maxdepth: 1
 
-   crawlers/ebird
-   crawlers/worldbirds
+   scrapers/ebird
+   scrapers/worldbirds
 
 Resources
 ---------

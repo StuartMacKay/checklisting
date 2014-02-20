@@ -22,7 +22,7 @@ setup(
     url='http://pypi.python.org/pypi/checklists_scrapers/',
     license='GPL',
     packages=find_packages(),
-    keywords='eBird worldbirds web crawler birds checklists',
+    keywords='eBird worldbirds web scraper birds checklists',
     classifiers=[
         "Development Status :: 4 - Beta",
         "Environment :: Web Environment",

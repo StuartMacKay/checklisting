@@ -1,1 +1,1 @@
-"""Tests for each of the crawlers."""
+"""Tests for each of the scrapers."""

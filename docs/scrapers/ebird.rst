@@ -6,13 +6,13 @@ up to the past 30 days. The records published through the API also include the
 checklist identifier which is used to scrape additional data, such as the
 protocol used, from the checklist web page.
 
-The crawler is run using the crawl command-line tool::
+The scraper is run using the crawl command-line tool::
 
     scrapy crawl ebird -a region=PT-11
 
-The -a option is used by scrapy to pass key-value pairs to the crawler. The
+The -a option is used by scrapy to pass key-value pairs to the scraper. The
 eBird API and websites are public so only the region code, e.g. PT-11 needs to
-be passed to the crawler. See the Resources section for links to a full list
+be passed to the scraper. See the Resources section for links to a full list
 of the available region codes.
 
 Resources

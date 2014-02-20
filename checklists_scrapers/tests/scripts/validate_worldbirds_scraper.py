@@ -1,15 +1,15 @@
 """
-validate_worldbirds_crawler.py
+validate_worldbirds_scraper.py
 
-This script used to validate the crawler used to download checklists from a
-WorldBirds server. Once the crawler has completes the suite of tests in the
+This script used to validate the scraper used to download checklists from a
+WorldBirds server. Once the scraper has completed the suite of tests in the
 module checklists_scrapers.tests.sites is executed to verify that all the
 information is extracted correctly from the site.
 
-To run the tests on the checklists downloaded by the WorldBirds crawler run
+To run the tests on the checklists downloaded by the WorldBirds scraper run
 the script as follows:
 
-    python validate_worldbirds_crawler.py <username> <password> <country>
+    python validate_worldbirds_scraper.py <username> <password> <country>
 
 where,
 

@@ -1,4 +1,4 @@
-"""Utility functions used by crawlers to parse content."""
+"""Utility functions used by the scrapers to parse content."""
 
 import json
 import re

@@ -2,11 +2,11 @@
 WorldBirds
 ==========
 
-The crawler for WorldBirds scrapes the web application pages so you need an
+The scraper for WorldBirds scrapes the web application pages so you need an
 account to extract the data. The data is generally available for download but
 scraping pages makes it easier to obtain the most recently added checklists.
 
-The crawler is run using the crawl command::
+The scraper is run using the crawl command::
 
     scrapy crawl worldbirds -a username=<username> -a password=<password> -a country=<iso code>
 
@@ -37,7 +37,7 @@ Supported Databases
 
 The network of databases hosted by WorldBirds covers some 28 geographical
 areas and countries. All the databases use the same version of the web
-application for access so the crawler should be able to download checklists
+application for access so the scraper should be able to download checklists
 from any of them. Databases it has been specifically tested with include:
 
 ========   ====  ===

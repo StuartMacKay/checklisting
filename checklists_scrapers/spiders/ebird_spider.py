@@ -1,6 +1,6 @@
-"""A crawler downloading checklists from eBird.
+"""A scraper for downloading checklists from eBird.
 
-This crawler creates checklists for recent observations for a given region
+This scraper creates checklists for recent observations for a given region
 using the eBird API. Additional information for each checklist is also
 scraped from the checklist web page.
 """

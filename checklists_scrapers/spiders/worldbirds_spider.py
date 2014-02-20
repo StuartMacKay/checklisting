@@ -1,6 +1,6 @@
-"""A crawler downloading checklists from Worldbirds.
+"""A scraper for downloading checklists from Worldbirds.
 
-This crawler creates checklists for checklists added to the WorldBirds database
+This scraper creates checklists for checklists added to the WorldBirds database
 from BirdLife International.
 """
 
@@ -28,7 +28,7 @@ class VisitParser(object):
         """Initialize the parser the contents of the Latest News page.
 
         Args:
-            response (Response): the response from the crawler containing the
+            response (Response): the response from the scraper containing the
                 contents of the Latest News page.
 
         Returns:
@@ -103,7 +103,7 @@ class ChecklistParser(object):
         """Initialize the parser with a JSON encoded response.
 
         Args:
-            response (Response): the response from the crawler containing the
+            response (Response): the response from the scraper containing the
                 contents of the popup panel displaying the checklist.
 
         Returns:
@@ -290,7 +290,7 @@ class LocationParser(object):
         """Initialize the parser the contents of the popup panel.
 
         Args:
-            response (Response): the response from the crawler containing the
+            response (Response): the response from the scraper containing the
                 contents of the location popup.
 
         Returns:
@@ -326,7 +326,7 @@ class ObserverParser(object):
         """Initialize the parser the contents of the popup panel.
 
         Args:
-            response (Response): the response from the crawler containing the
+            response (Response): the response from the scraper containing the
                 contents of the location popup.
 
         Returns:
@@ -428,7 +428,7 @@ class WorldBirdsSpider(BaseSpider):
             raise ValueError("You must give the country code for a database.")
         if country.lower() not in self.databases:
             raise ValueError("Sorry, %s is one of the countries that is not"
-                             " (yet) supported by this crawler.")
+                             " (yet) supported by this scraper.")
         self.country = country
         self.start_url = self.databases[country.lower()]
         self.server = self.start_url.split('/')[2]

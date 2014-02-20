@@ -1,15 +1,15 @@
 """
-validate_ebird_crawler.py
+validate_ebird_scraper.py
 
-This script is used to validate the crawler used to download checklists from
-the eBird API and checklist web pages. Once the crawler has finished the suite
+This script is used to validate the scraper used to download checklists from
+the eBird API and checklist web pages. Once the scraper has finished the suite
 of tests in the module checklists_scrapers.tests.sites is executed to verify
 that all the information is extracted correctly.
 
-To run the tests on the checklists downloaded by the WorldBirds crawler run
+To run the tests on the checklists downloaded by the WorldBirds scraper run
 the script as follows:
 
-    python validate_ebird_crawler.py <region>
+    python validate_ebird_scraper.py <region>
 
 where,
 

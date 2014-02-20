@@ -1,14 +1,14 @@
-"""Crawler validation tests.
+"""Scraper validation tests.
 
-Verify that the format of the checklists downloaded by a given crawler matches
+Verify that the format of the checklists downloaded by a given scraper matches
 the checklist file format and so can consistently be loaded into a target
 database with a minimum in variation.
 
-The goal of these tests are both checking of the files that the crawlers
+The goal of these tests are both checking of the files that the scrapers
 generate and notifying any breaking changes to the sites being crawled.
 
 The tests are run by the scripts in checklists_scrapers/tests/scripts
-which run the crawlers to download the checklists for a given database. The
+which run the scrapers to download the checklists for a given database. The
 (JSON format) checklists are then loaded and nose is called to run all of the
 tests in this module.
 

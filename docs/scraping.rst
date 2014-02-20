@@ -7,22 +7,22 @@ crawl command::
 
     scrapy crawl ebird -a region=PT-11
 
-The -a option is used to pass arguments to the crawler, in this case checklists
+The -a option is used to pass arguments to the scraper, in this case checklists
 will be downloaded for eBird region PT-11 (Lisbon, Portugal).
 
-All of the environment variables, used to configure the crawlers, may be
-overridden on the command line when the crawlers are run using the -s option::
+All of the environment variables, used to configure the scrapers, may be
+overridden on the command line when the scrapers are run using the -s option::
 
     scrapy crawl ebird -s DOWNLOAD_DIR=/path/to/dir
 
 Note that the "CHECKLISTING" prefix from the environment variable name is
 dropped.
 
-See the docs for each crawler to get a list of the command line arguments.
+See the docs for each scraper to get a list of the command line arguments.
 
 If you have defined the settings for a mail server and the setting
 CHECKLISTS_REPORT_RECIPIENTS then a status report will be sent out each time
-the crawlers are run. The report contains a list of the checklist downloaded
+the scrapers are run. The report contains a list of the checklist downloaded
 along with an errors (complete with stack traces) and any warnings::
 
     Spider: ebird
