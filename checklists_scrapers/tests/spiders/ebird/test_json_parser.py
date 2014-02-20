@@ -2,8 +2,8 @@
 
 from unittest import TestCase
 
-from checklists_scrapers.spiders import CHECKLIST_FILE_FORMAT_VERSION, \
-    CHECKLIST_FILE_LANGUAGE
+from checklists_scrapers.spiders import CHECKLISTS_DOWNLOAD_FORMAT, \
+    CHECKLISTS_DOWNLOAD_LANGUAGE
 from checklists_scrapers.spiders.ebird_spider import JSONParser
 from checklists_scrapers.tests.utils import response_for_data
 
@@ -142,8 +142,8 @@ class JSONParserTestCase(TestCase):
 
         expected = {
             'meta': {
-                'version': CHECKLIST_FILE_FORMAT_VERSION,
-                'language': CHECKLIST_FILE_LANGUAGE,
+                'version': CHECKLISTS_DOWNLOAD_FORMAT,
+                'language': CHECKLISTS_DOWNLOAD_LANGUAGE,
             },
             'identifier': 'S0000002',
             'date': '2013-03-27',

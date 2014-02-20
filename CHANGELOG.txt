@@ -1,6 +1,9 @@
 Version 0.1
 ------
 
+  * Renamed the constant used to identify the version number of the downloaded
+    checklists from CHECKLIST_FILE_FORMAT_VERSION to CHECKLISTS_DOWNLOAD_FORMAT.
+    Similarly renamed CHECKLIST_FILE_LANGUAGE to CHECKLISTS_DOWNLOAD_LANGUAGE.
   * Renamed the project and the main module to checklists_scrapers. The
     project is part of a group designed to work with the django-checklists
     database and the association is clearer with the change in name.
