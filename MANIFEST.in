@@ -1,5 +1,4 @@
 include *.rst *.txt
-recursive-include checklisting *.py
+recursive-include checklists_scrapers *.py
 recursive-include docs *.rst
-prune checklisting/tests
-prune checklisting/.*
+prune checklists_scrapers/.*

@@ -1,15 +1,23 @@
 Version 0.1
 ------
 
-  * Added scripts to run the site tests for each crawler. This makes it
-    easier to pass in the parameters for the site to be crawled rather than
+  * Renamed the constant used to identify the version number of the downloaded
+    checklists from CHECKLIST_FILE_FORMAT_VERSION to CHECKLISTS_DOWNLOAD_FORMAT.
+    Similarly renamed CHECKLIST_FILE_LANGUAGE to CHECKLISTS_DOWNLOAD_LANGUAGE.
+  * Renamed the project and the main module to checklists_scrapers. The
+    project is part of a group designed to work with the django-checklists
+    database and the association is clearer with the change in name.
+  * Changed the licence from GPLv3 to BSD so it is compatible with the other
+    projects in the checklists "group".
+  * Changes the prefix used on the environment variables from "CHECKLISTING"
+    to "CHECKLISTS" to minimise the number that must be set when used the
+    scrapers with the django-checklists app.
+  * Added scripts to run the site tests for each scraper. This makes it
+    easier to pass in the parameters for the site to be scraped rather than
     defining them in the settings.
-  * Split the requirements into separate files for development, staging and
-    production so packages used for testing are kept out of production
-    installs.
-  * Configuring the crawlers is now done through environment variables rather
+  * Configuring the scrapers is now done through environment variables rather
     than a local settings file. This makes it much easier to install and run
-    the crawlers, particularly from the most common use-case of calling them
+    the scrapers, particularly from the most common use-case of calling them
     from cron or a similar scheduler.
   * Removed the scrapy project file since the settings file will typically be
     set using an environment variable.
@@ -19,6 +27,8 @@ Version 0.1
     checklist are only reported as warnings when the logging level is set to
     DEBUG. This avoids any confusion in production since the warnings are only
     used to debug issues with the eBird API.
+  * The status report is now written to the directory where checklists are
+    downloaded when the logging level is set to 'DEBUG'.
   * Fixed bugs caused by unexpected missing fields when downloading checklists
     from eBird.
 

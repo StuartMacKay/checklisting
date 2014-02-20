@@ -3,7 +3,7 @@ import os
 from setuptools import setup, find_packages
 
 
-version = __import__('checklisting').get_version()
+version = __import__('checklists_scrapers').get_version()
 
 
 def read(filename):
@@ -12,25 +12,30 @@ def read(filename):
 
 
 setup(
-    name='checklisting',
+    name='checklists_scrapers',
     version=version,
-    description='Web crawlers for downloading bird checklists.',
+    description='Web scrapers for downloading checklists of birds from online'
+                'databases such as eBird.',
     long_description=read("README.rst"),
     author='Stuart MacKay',
     author_email='smackay@flagstonesoftware.com',
-    url='http://pypi.python.org/pypi/checklisting/',
+    url='http://pypi.python.org/pypi/checklists_scrapers/',
     license='GPL',
     packages=find_packages(),
-    keywords='eBird worldbirds web crawler birds checklists',
+    keywords='eBird worldbirds web scraper birds checklists',
     classifiers=[
         "Development Status :: 4 - Beta",
         "Environment :: Web Environment",
         "Intended Audience :: Science/Research",
-        "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+        "License :: OSI Approved :: BSD License",
         "Operating System :: OS Independent",
         "Programming Language :: Python",
         "Natural Language :: English",
-        "Topic :: Text Processing :: Filters",
+        "Topic :: Internet :: WWW/HTTP",
+    ],
+    test_suite='nose.collector',
+    tests_require=[
+        'nose==1.3.0',
     ],
     install_requires=[
         'scrapy == 0.16.4',

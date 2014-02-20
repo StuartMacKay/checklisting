@@ -8,7 +8,7 @@ to make it easy to transport and process the information.
 
 There is no standard format, though there are fields that are common to most
 (all) data sources, with date, name of the location and the list of species
-seen being the most obvious examples. The crawlers that parse the different
+seen being the most obvious examples. The scrapers that parse the different
 sources attempt to extract all the information available for a given checklist
 and the nested dictionary format makes it easy to accommodate this while
 keeping the (formatted) files human-readable.
@@ -89,7 +89,7 @@ A typical checklist has the following structure. ::
 
 **Meta**
 
-This contains information added by the crawler. ::
+This contains information added by the scraper. ::
 
         "meta": {
             "version": 1,
@@ -101,10 +101,10 @@ Currently there are two attributes: **version** is the revision number for the
 format used in the checklist file. It will be incremented for each
 incompatible* change to the existing format; **language** is the two-letter,
 ISO 639-1 code used to identify the spoken language used in species names and
-comments. Currently the crawlers only generate checklists in English, 'en'.
+comments. Currently the scrapers only generate checklists in English, 'en'.
 
 *Since this project is in an early stage of development, currently there are
-only crawlers for eBird and WorldBirds, what exactly constitutes an
+only scrapers for eBird and WorldBirds, what exactly constitutes an
 incompatible change is not clearly defined. If the latitude and longitude
 of the location were moved to a dictionary that added grid references, that
 is clearly incompatible with existing code that processed the files.
@@ -329,14 +329,15 @@ not exceed it.
 Future Changes
 --------------
 The current format (version 1) covers the data available from the first two
-sources for which crawlers are available, namely eBird and WorldBirds (which
-has a number of different databases for different countries). As more sources
-are added then the format is likely to change, though hopefully this will be
-the addition of new fields rather than changes to the ones documented above.
+sources for which scrapers are available, namely eBird and WorldBirds (the
+latter has a number of different databases for different countries). As more
+sources are added then the format is likely to change, though hopefully this
+will be the addition of new fields rather than changes to the ones documented
+above.
 
 From the current sources, all the available information is extracted, except
 the breeding status field from eBird. This was omitted because an earlier
-version of checklisting used codes for fields such as the protocol names and
-it was not clear how to incorporate the breeding status. With the recent move
-to simply use the name given in the source, adding the breeding status is a
-simple change and will likely happen sooner rather than later.
+version of checklists_scrapers used codes for fields such as the protocol names
+and it was not clear how to incorporate the breeding status. With the recent
+move to simply use the name given in the source, adding the breeding status is
+a simple change and will likely happen sooner rather than later.

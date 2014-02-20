@@ -1,9 +1,9 @@
 
-============
-Checklisting
-============
-Checklisting is a set of web crawlers for downloading records from
-on-line databases of observations of birds. Crawlers are available for:
+===================
+Checklists_scrapers
+===================
+Checklists__scrapers is a set of web scrapers for downloading records from
+on-line databases of observations of birds. Scrapers are available for:
 
 :ebird:
     a database hosted by the Laboratory for Ornithology at Cornell University,
@@ -14,81 +14,77 @@ on-line databases of observations of birds. Crawlers are available for:
     a network of databases hosted by WorldBirds (BirdLife International),
     with good coverage of countries around the Mediterranean and Africa.
 
-The crawlers download only recently submitted records and so must be run on
-a regular basis. They are intended to provide a continuous update of records
-and so are ideal for mirroring subsets of the records available (for a given
-region for example) so you don't have to repeatedly run reports or submit
-requests for data.  
+The eBird API only provider checklist records for up to the past 30 days so
+the scrapers must be run on a regular basis. They are intended to provide a
+continuous update of records and so are ideal for mirroring subsets of the
+records available (for a given region for example) so you don't have to
+repeatedly run reports or submit requests for data from the database hosts.
 
 So, what is this for?
 ---------------------
-Checklisting was written to aggregate records from different databases for 
-publishing in the `Birding Lisboa <http://www.birdinglisoa.com/>`_ news 
-service which covers the area around the Tejo estuary, Portugal. All the 
-downloaded checklists are loaded into a database which is used to publish
-the latest news as well as generate annual reports. 
+Checklists_scrapers was written to aggregate records from different databases
+for loading into a
+`django-checklists <http://github.com/StuartMacKay/django-checklists>`_
+database. However, since the downloaded checklists are in JSON format the file
+may be used with any similar database.
 
-There are no restrictions on the geographical area that can be covered, though
-obviously, the work of managing the database increases, particularly when 
-publishing news of recent observations.
- 
-A similar database could be used for any purpose - analysing observations 
+The scrapers (and django-checklists) are current used by the
+`Birding Lisboa <http://www.birdinglisoa.com/>`_ news service which covers the
+area around the Tejo estuary, Portugal. All the downloaded checklists are
+loaded into a database which is used to publish the latest news as well as
+generate annual reports.
+
+A similar database could be used for any purpose - analysing observations
 for conservation, environmental management or education. Aggregating the
-observations with the crawlers makes this task a lot easier. 
-
-Related projects
-----------------
-`Django-checklists <http://github.com/StuartMacKay/django-checklists>`_ is 
-a database system writen in python that can be used to load the observations
-downloaded by the crawlers. It is the database that was used for Birding 
-Lisboa. It has an administration application that can be used to manage the
-database and an Application Programming Interface (API) that makes it easy 
-to extract the data for analysis or publishing.
+observations from multiple databases with the scrapers makes this task a
+lot easier.
 
 Installing & Configuring
 ------------------------
-Checklisting is available from PyPI. You can install it with pip or
+Checklists_scrapers is available from PyPI. You can install it with pip or
 easy_install::
 
-    pip install checklisting
+    pip install checklists_scrapers
 
-The crawlers are built using the scrapy engine which uses settings, in the same
-way as Django, for configuration and runtime values. The checklisting settings
-file is configured to initialize its values from environment variables. That
-makes it easy to configure the crawlers, particularly for the most common
-use-case, running them from a scheduler such as cron. The only required setting
-is to tell scrapy (the engine used by the crawlers) the path to the settings
-module::
+The scrapers are built using the scrapy engine which uses settings, in the same
+way as Django, for configuration and runtime values. The settings file is
+configured to initialize its values from environment variables. That makes it
+easy to configure the scrapers, particularly for the most common use-case,
+running them from a scheduler such as cron.
 
-    export SCRAPY_SETTINGS_MODULE=checklisting.settings
+The only required setting is to tell scrapy (the engine used by the scrapers)
+the path to the settings module::
+
+    export SCRAPY_SETTINGS_MODULE=checklists_scrapers.settings
 
 The remaining settings have sensible defaults so only those that are
 installation dependent, such as the mail server used for sending out status
-reports. Here is this script that is used to run the crawlers for Birding
+reports. Here is this script that is used to run the scrapers for Birding
 Lisboa from cron::
 
     #!/bin/bash
 
-    export SCRAPY_SETTINGS_MODULE=checklisting.settings
+    export SCRAPY_SETTINGS_MODULE=checklists_scrapers.settings
 
-    export CHECKLISTING_LOG_LEVEL=INFO
+    export CHECKLISTS_LOG_LEVEL=INFO
 
-    export CHECKLISTING_DOWNLOAD_DIR=/tmp/birdinglisboa
+    export CHECKLISTS_DOWNLOAD_DIR=/tmp/checklists_scrapers
 
-    export CHECKLISTING_MAIL_FROM=crawlers@birdinglisboa.com
-    export CHECKLISTING_MAIL_HOST=mail.example.com
-    export CHECKLISTING_MAIL_USER=<user>
-    export CHECKLISTING_MAIL_PASS=<password>
+    export CHECKLISTS_MAIL_HOST=mail.example.com
+    export CHECKLISTS_MAIL_PORT=25
+    export CHECKLISTS_MAIL_USER=<user>
+    export CHECKLISTS_MAIL_PASS=<password>
+    export CHECKLISTS_MAIL_FROM=scrapers@example.com
 
-    export CHECKLISTING_REPORT_RECIPIENTS=admins@birdinglisboa.com
+    export CHECKLISTS_REPORT_RECIPIENTS=admins@example.com
 
-    source /home/birdinglisboa/venv/bin/activate
-    cd /home/birdinglisboa
+    source /home/project/venv/bin/activate
+    cd /home/project
 
     scrapy crawl ebird -a region=PT-11
     scrapy crawl ebird -a region=PT-15
 
-The settings can also be defined when the crawlers are run using the -S
+The settings can also be defined when the scrapers are run using the -S
 option::
 
     scrapy crawl ebird -a region=PT-15 -s LOG_LEVEL=DEBUG
@@ -96,16 +92,27 @@ option::
 However this obvious becomes a little cumbersome if more than one or two
 settings are involved.
 
-Note that the environment variables use a prefix "CHECKLISTING" as a namespace
+NOTE: the environment variables use a prefix "CHECKLISTS" as a namespace
 to avoid interfering with any other variables. When the setting is defined
-using the -s option when running the crawlers, this prefix must be dropped.
+using the -s option when running the scrapers, this prefix must be dropped.
+
+NOTE: CHECKLISTS_REPORT_RECIPIENTS is a comma-separated list of one or more
+email addresses. The default value is an empty string so no status reports
+will be mailed out. However if the LOG_LEVEL is set to 'DEBUG' the status
+report will be written to the file checklists_scrapers_status.txt in the
+CHECKLISTS_DOWNLOAD_DIR directory.
+
+NOTE: You can configure the mail server settings using the same environment
+variables used by the django-checklists project. This minimises the number
+of variables that need to be defined when using both apps in the same project.
+See the settings file for the names of the variables to use.
 
 Everything is now ready to run.
 
-Crawling
+Scraping
 --------
-The arguments passed the crawlers on the command line specify value such as
-which region to download observations from and login details for crawlers 
+The arguments passed to the scrapers on the command line specify value such as
+which region to download observations from and login details for scrapers
 that need an account to access the data::
 
     scrapy crawl ebird -a region=PT-11
@@ -116,11 +123,13 @@ See the docs for each spider to get a list of the command line arguments and
 settings.
 
 If you have defined the settings for a mail server and the setting
-CHECKLISTING_REPORT_RECIPIENTS then a status report will be sent out each time
-the crawlers are run. The report contains a list of the checklist downloaded
-along with an errors (complete with stack traces) and any warnings::
+CHECKLISTS_REPORT_RECIPIENTS then a status report will be sent out each time
+the scrapers are run. If the LOG_LEVEL is set to 'DEBUG' the report is also
+written to the directory where the checklists are downloaded to. The report
+contains a list of the checklist downloaded along with an errors (complete with
+stack traces) and any warnings::
 
-    Spider: ebird
+    Scraper: ebird
     Date: 03 Jan 2014
     Time: 11:00
 
@@ -148,11 +157,11 @@ along with an errors (complete with stack traces) and any warnings::
     --- <exception caught here> ---
       File "/home/birdinglisboa/venv/local/lib/python2.7/site-packages/twisted/internet/defer.py", line 577, in _runCallbacks
         current.result = callback(current.result, *args, **kw)
-      File "/home/birdinglisboa/venv/local/lib/python2.7/site-packages/checklisting/spiders/ebird_spider.py", line 585, in parse_checklist
+      File "/home/birdinglisboa/venv/local/lib/python2.7/site-packages/checklists_scrapers/spiders/ebird_spider.py", line 585, in parse_checklist
         checklist = self.merge_checklists(original, update)
-      File "/home/birdinglisboa/venv/local/lib/python2.7/site-packages/checklisting/spiders/ebird_spider.py", line 602, in merge_checklists
+      File "/home/birdinglisboa/venv/local/lib/python2.7/site-packages/checklists_scrapers/spiders/ebird_spider.py", line 602, in merge_checklists
         original['entries'], update['entries'])
-      File "/home/birdinglisboa/venv/local/lib/python2.7/site-packages/checklisting/spiders/ebird_spider.py", line 695, in merge_entries
+      File "/home/birdinglisboa/venv/local/lib/python2.7/site-packages/checklists_scrapers/spiders/ebird_spider.py", line 695, in merge_entries
         if count in key[index]:
     exceptions.TypeError: string indices must be integers
 
