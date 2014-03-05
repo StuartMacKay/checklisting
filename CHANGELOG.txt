@@ -1,5 +1,5 @@
 Version 0.1.1
-------
+-------------
 
   * Updated the ebird scraper so the breakdown of a count by age and sex
     extracted from the checklist web page has an identifier with the form
@@ -10,7 +10,7 @@ Version 0.1.1
     easier to read (and debug).
 
 Version 0.1
-------
+-----------
 
   * Renamed the constant used to identify the version number of the downloaded
     checklists from CHECKLIST_FILE_FORMAT_VERSION to CHECKLISTS_DOWNLOAD_FORMAT.
