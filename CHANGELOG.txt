@@ -1,5 +1,16 @@
+Version 0.1.1
+-------------
+
+  * Updated the ebird scraper so the breakdown of a count by age and sex
+    extracted from the checklist web page has an identifier with the form
+    DET<id> where <id> is a two-digit integer created from the index of
+    the cell in the table.
+
+  * Checklists are now saved in JSON format with an indent of 4 to make them
+    easier to read (and debug).
+
 Version 0.1
-------
+-----------
 
   * Renamed the constant used to identify the version number of the downloaded
     checklists from CHECKLIST_FILE_FORMAT_VERSION to CHECKLISTS_DOWNLOAD_FORMAT.
