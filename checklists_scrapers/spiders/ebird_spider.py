@@ -405,6 +405,8 @@ class HTMLParser(object):
 
         xpath = './/div[@class="sd-data-age-sex"]//tr'
         names = node.select(xpath).select('./th/text()').extract()
+        cols = len(names)
+        row = 0
 
         for selector in node.select(xpath):
             ages = selector.select('./td')
@@ -414,14 +416,16 @@ class HTMLParser(object):
 
             sex = ages[0].select('./text()').extract()[0]
 
-            for index, age in zip(range(1, 5), names):
-                values = ages[index].select('./text()').extract()
+            for col, age in zip(range(1, cols + 1), names):
+                values = ages[col].select('./text()').extract()
                 if values:
                     details.append({
+                        'identifier': 'DET%02d' % (row * cols + col),
                         'age': age,
                         'sex': sex,
                         'count': int(values[0])
                     })
+            row += 1
         return details
 
 

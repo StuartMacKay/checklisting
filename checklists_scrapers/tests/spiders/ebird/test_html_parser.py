@@ -202,9 +202,12 @@ class ParseHTMLEntryTestCase(TestCase):
     def test_extract_detail(self):
         """Verify the age and sex can be extracted for an entry."""
         expected = [
-            {'age': 'Adult', 'sex': 'Male', 'count': 9},
-            {'age': 'Adult', 'sex': 'Female', 'count': 6},
-            {'age': 'Juvenile', 'sex': 'Sex Unknown', 'count': 8},
+            {'age': 'Adult', 'sex': 'Male', 'count': 9,
+             'identifier': 'DET03'},
+            {'age': 'Adult', 'sex': 'Female', 'count': 6,
+             'identifier': 'DET07'},
+            {'age': 'Juvenile', 'sex': 'Sex Unknown', 'count': 8,
+             'identifier': 'DET09'},
         ]
         entry = self.parser.docroot.select('//tr[@class="spp-entry"]')
         actual = self.parser.get_entry_details(entry)
