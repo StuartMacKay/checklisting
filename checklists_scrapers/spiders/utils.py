@@ -70,4 +70,4 @@ def save_json_data(path, data):
             written to a file.
     """
     with open(path, 'wb') as fp:
-        json.dump(data, fp)
+        json.dump(data, fp, indent=4)
