@@ -66,17 +66,17 @@ Lisboa from cron::
 
     export SCRAPY_SETTINGS_MODULE=checklists_scrapers.settings
 
-    export CHECKLISTS_LOG_LEVEL=INFO
+    export LOG_LEVEL=INFO
 
-    export CHECKLISTS_DOWNLOAD_DIR=/tmp/checklists_scrapers
+    export DOWNLOAD_DIR=/tmp/checklists_scrapers
 
-    export CHECKLISTS_MAIL_HOST=mail.example.com
-    export CHECKLISTS_MAIL_PORT=25
-    export CHECKLISTS_MAIL_USER=<user>
-    export CHECKLISTS_MAIL_PASS=<password>
-    export CHECKLISTS_MAIL_FROM=scrapers@example.com
+    export MAIL_HOST=mail.example.com
+    export MAIL_PORT=25
+    export MAIL_USER=<user>
+    export MAIL_PASS=<password>
+    export MAIL_FROM=scrapers@example.com
 
-    export CHECKLISTS_REPORT_RECIPIENTS=admins@example.com
+    export REPORT_RECIPIENTS=admins@example.com
 
     source /home/project/venv/bin/activate
     cd /home/project
@@ -98,16 +98,11 @@ NOTE: the environment variables use a prefix "CHECKLISTS" as a namespace
 to avoid interfering with any other variables. When the setting is defined
 using the -s option when running the scrapers, this prefix must be dropped::
 
-NOTE: CHECKLISTS_REPORT_RECIPIENTS is a comma-separated list of one or more
+NOTE: REPORT_RECIPIENTS is a comma-separated list of one or more
 email addresses. The default value is an empty string so no status reports
 will be mailed out. However if the LOG_LEVEL is set to 'DEBUG' the status
 report will be written to the file checklists_scrapers_status.txt in the
-CHECKLISTS_DOWNLOAD_DIR directory.
-
-NOTE: You can configure the mail server settings using the same environment
-variables used by the django-checklists project. This minimises the number
-of variables that need to be defined when using both apps in the same project.
-See the settings file for the names of the variables to use.
+DOWNLOAD_DIR directory.
 
 Everything is now ready to run.
 
@@ -125,7 +120,7 @@ See the docs for each spider to get a list of the command line arguments and
 settings.
 
 If you have defined the settings for a mail server and the setting
-CHECKLISTS_REPORT_RECIPIENTS then a status report will be sent out each time
+REPORT_RECIPIENTS then a status report will be sent out each time
 the scrapers are run. If the LOG_LEVEL is set to 'DEBUG' the report is also
 written to the directory where the checklists are downloaded to. The report
 contains a list of the checklist downloaded along with an errors (complete with

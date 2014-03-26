@@ -14,8 +14,7 @@ from scrapy.http import Request
 from scrapy.selector import HtmlXPathSelector
 from scrapy.spider import BaseSpider
 
-from checklists_scrapers.spiders import CHECKLISTS_DOWNLOAD_FORMAT, \
-    CHECKLISTS_DOWNLOAD_LANGUAGE
+from checklists_scrapers.spiders import DOWNLOAD_FORMAT, DOWNLOAD_LANGUAGE
 from checklists_scrapers.spiders.utils import remove_whitespace, select_keys, dedup, \
     save_json_data
 
@@ -74,8 +73,8 @@ class JSONParser(object):
         """
         checklist = {
             'meta': {
-                'version': CHECKLISTS_DOWNLOAD_FORMAT,
-                'language': CHECKLISTS_DOWNLOAD_LANGUAGE,
+                'version': DOWNLOAD_FORMAT,
+                'language': DOWNLOAD_LANGUAGE,
             },
             'identifier': record['subID'].strip(),
             'date': record['obsDt'].strip().split(' ')[0],

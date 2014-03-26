@@ -49,40 +49,20 @@ EXTENSIONS = {
 #
 
 LOG_STDOUT = True
-LOG_LEVEL = get_env_variable('CHECKLISTS_LOG_LEVEL', 'INFO')
-LOG_FILE = get_env_variable('CHECKLISTS_LOG_FILE', 'checklists_scrapers.log')
+LOG_LEVEL = get_env_variable('LOG_LEVEL', 'INFO')
+LOG_FILE = get_env_variable('LOG_FILE', 'checklists_scrapers.log')
 
 
 #
 # Mail server
 #
 # Settings for the SMTP server that is used to send out status reports.
-# Two different sets of environment variables can be used. Variables with
-# the prefix 'CHECKLISTS_MAIL' match the names of settings used by Scrapy
-# while the names that contain 'EMAIL' match the names of settings used by
-# django. This allows a single set of variables to be defined for the mail
-# host when using the scrapers with django-checklists while still allowing
-# different mail servers to be used within the same project.
 
-MAIL_FROM = get_env_variable('CHECKLISTS_MAIL_FROM', '')
-if MAIL_FROM == '':
-    MAIL_FROM = get_env_variable('CHECKLISTS_SERVER_EMAIL', '')
-
-MAIL_HOST = get_env_variable('CHECKLISTS_MAIL_HOST', '')
-if MAIL_HOST == '':
-    MAIL_HOST = get_env_variable('CHECKLISTS_EMAIL_HOST', '')
-
-MAIL_PORT = int(get_env_variable('CHECKLISTS_MAIL_PORT', '25'))
-if MAIL_PORT == '':
-    MAIL_PORT = int(get_env_variable('CHECKLISTS_EMAIL_PORT', ''))
-
-MAIL_USER = get_env_variable('CHECKLISTS_MAIL_USER', '')
-if MAIL_USER == '':
-    MAIL_USER = get_env_variable('CHECKLISTS_EMAIL_HOST_USER', '')
-
-MAIL_PASS = get_env_variable('CHECKLISTS_MAIL_PASS', '')
-if MAIL_PASS == '':
-    MAIL_PASS = get_env_variable('CHECKLISTS_EMAIL_HOST_PASSWORD', '')
+MAIL_FROM = get_env_variable('MAIL_FROM', '')
+MAIL_HOST = get_env_variable('MAIL_HOST', '')
+MAIL_PORT = int(get_env_variable('MAIL_PORT', '25'))
+MAIL_USER = get_env_variable('MAIL_USER', '')
+MAIL_PASS = get_env_variable('MAIL_PASS', '')
 
 #
 # Status reports
@@ -93,7 +73,7 @@ if MAIL_PASS == '':
 # that will receive a status report each time the spiders are run. Be sure
 # to also define the settings for the mail server used to send the report.
 
-REPORT_RECIPIENTS = get_env_variable('CHECKLISTS_REPORT_RECIPIENTS', '')
+REPORT_RECIPIENTS = get_env_variable('REPORT_RECIPIENTS', '')
 
 
 #
@@ -103,12 +83,12 @@ REPORT_RECIPIENTS = get_env_variable('CHECKLISTS_REPORT_RECIPIENTS', '')
 # Define a shared directory for scraper downloads. The scrapers use the name
 # of the source in file names so checklists from different sources will not
 # overwrite each other.
-DOWNLOAD_DIR = get_env_variable('CHECKLISTS_DOWNLOAD_DIR', '.')
+DOWNLOAD_DIR = get_env_variable('DOWNLOAD_DIR', '.')
 
 # Download checklists from the last <n> days. A value of 7 (one week) offers
 # a reasonable trade-off between only fetching recent data while still
 # catching checklists that are added late.
-DURATION = int(get_env_variable('CHECKLISTS_DURATION', '7'))
+DURATION = int(get_env_variable('DURATION', '7'))
 
 # eBird redirects requests for the checklist web page to do some security
 # checks so the redirect middleware needs to be enabled.

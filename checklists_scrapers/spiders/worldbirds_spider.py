@@ -14,8 +14,7 @@ from scrapy import log
 from scrapy.spider import BaseSpider
 from scrapy.selector import HtmlXPathSelector
 
-from checklists_scrapers.spiders import CHECKLISTS_DOWNLOAD_FORMAT, \
-    CHECKLISTS_DOWNLOAD_LANGUAGE
+from checklists_scrapers.spiders import DOWNLOAD_FORMAT, DOWNLOAD_LANGUAGE
 from checklists_scrapers.exceptions import LoginException
 from checklists_scrapers.spiders.utils import save_json_data
 
@@ -128,8 +127,8 @@ class ChecklistParser(object):
 
         return {
             'meta': {
-                'version': CHECKLISTS_DOWNLOAD_FORMAT,
-                'language': CHECKLISTS_DOWNLOAD_LANGUAGE,
+                'version': DOWNLOAD_FORMAT,
+                'language': DOWNLOAD_LANGUAGE,
             },
             'identifier': self.country.upper() + str(self.identifier),
             'date': "%s-%s-%s" % (year, month, day),

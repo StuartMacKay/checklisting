@@ -15,13 +15,10 @@ overridden on the command line when the scrapers are run using the -s option::
 
     scrapy crawl ebird -s DOWNLOAD_DIR=/path/to/dir
 
-Note that the "CHECKLISTING" prefix from the environment variable name is
-dropped.
-
 See the docs for each scraper to get a list of the command line arguments.
 
 If you have defined the settings for a mail server and the setting
-CHECKLISTS_REPORT_RECIPIENTS then a status report will be sent out each time
+REPORT_RECIPIENTS then a status report will be sent out each time
 the scrapers are run. The report contains a list of the checklist downloaded
 along with an errors (complete with stack traces) and any warnings::
 

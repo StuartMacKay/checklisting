@@ -3,6 +3,7 @@ Version 0.2
 
   * Cleaned up organisation of docs source files.
 
+  * Removed CHECKLISTS_ prefix from settings and package constants.
 
 Version 0.1.1
 -------------

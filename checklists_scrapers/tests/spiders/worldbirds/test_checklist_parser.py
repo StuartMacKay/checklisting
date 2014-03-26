@@ -2,8 +2,7 @@
 from datetime import datetime
 from unittest import TestCase
 
-from checklists_scrapers.spiders import CHECKLISTS_DOWNLOAD_FORMAT, \
-    CHECKLISTS_DOWNLOAD_LANGUAGE
+from checklists_scrapers.spiders import DOWNLOAD_FORMAT, DOWNLOAD_LANGUAGE
 from checklists_scrapers.spiders.worldbirds_spider import ChecklistParser
 from checklists_scrapers.tests.utils import response_for_content
 
@@ -118,12 +117,12 @@ class ChecklistParserTestCase(TestCase):
 
     def test_checklist_version(self):
         """Verify the version number for the checklist format is defined."""
-        self.assertEqual(CHECKLISTS_DOWNLOAD_FORMAT,
+        self.assertEqual(DOWNLOAD_FORMAT,
                          self.parser.get_checklist()['meta']['version'])
 
     def test_checklist_language(self):
         """Verify the language used for the checklist format is defined."""
-        self.assertEqual(CHECKLISTS_DOWNLOAD_LANGUAGE,
+        self.assertEqual(DOWNLOAD_LANGUAGE,
                          self.parser.get_checklist()['meta']['language'])
 
     def test_checklist_identifier(self):
