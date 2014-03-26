@@ -2,7 +2,7 @@
 ===================
 Checklists_scrapers
 ===================
-Checklists__scrapers is a set of web scrapers for downloading records from
+Checklists_scrapers is a set of web scrapers for downloading records from
 on-line databases of observations of birds. Scrapers are available for:
 
 :ebird:
@@ -14,7 +14,7 @@ on-line databases of observations of birds. Scrapers are available for:
     a network of databases hosted by WorldBirds (BirdLife International),
     with good coverage of countries around the Mediterranean and Africa.
 
-The eBird API only provider checklist records for up to the past 30 days so
+The eBird API only provides checklist records for up to the past 30 days so
 the scrapers must be run on a regular basis. They are intended to provide a
 continuous update of records and so are ideal for mirroring subsets of the
 records available (for a given region for example) so you don't have to
@@ -92,9 +92,11 @@ option::
 However this obvious becomes a little cumbersome if more than one or two
 settings are involved.
 
+    scrapy crawl ebird -a region=PT-15 -s DOWNLOAD_DIR=downloads
+
 NOTE: the environment variables use a prefix "CHECKLISTS" as a namespace
 to avoid interfering with any other variables. When the setting is defined
-using the -s option when running the scrapers, this prefix must be dropped.
+using the -s option when running the scrapers, this prefix must be dropped::
 
 NOTE: CHECKLISTS_REPORT_RECIPIENTS is a comma-separated list of one or more
 email addresses. The default value is an empty string so no status reports
@@ -186,3 +188,19 @@ the subspecies is reported on the checklist web page. That means when the web
 page was scraped it was not possible to distinguish between the two records.
 The records should be edited to add any useful information such as comments,
 which are only available from the web page.
+
+Links
+#####
+
+* Documentation: http://checklists_scrapers.readthedocs.org/
+* Repository: https://github.com/StuartMacKay/checklists_scrapers/
+* Package: https://pypi.python.org/pypi/checklists_scrapers/
+* Buildbot: http://travis-ci.org/#!/StuartMacKay/checklists_scrapers/
+
+.. image:: https://secure.travis-ci.org/StuartMacKay/checklists.png?branch=master
+    :target: http://travis-ci.org/StuartMacKay/checklists_scrapers/
+
+
+Licence
+#######
+Checklists_scrapers is available under the modified BSD licence.
