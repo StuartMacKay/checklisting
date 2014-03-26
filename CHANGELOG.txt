@@ -1,3 +1,9 @@
+Version 0.2
+-----------
+
+  * Cleaned up organisation of docs source files.
+
+
 Version 0.1.1
 -------------
 
