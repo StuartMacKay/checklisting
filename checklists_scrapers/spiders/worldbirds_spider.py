@@ -312,8 +312,8 @@ class LocationParser(object):
         location['identifier'] = self.country.upper() + str(self.identifier)
         location['country'] = rows[1].strip()
         location['comment_en'] = rows[5].strip()
-        location['lat'] = float(rows[2].split(',')[0].strip())
-        location['lon'] = float(rows[2].split(',')[1].strip())
+        location['lat'] = round(float(rows[2].split(',')[0].strip()), 4)
+        location['lon'] = round(float(rows[2].split(',')[1].strip()), 4)
         return self.checklist
 
 
