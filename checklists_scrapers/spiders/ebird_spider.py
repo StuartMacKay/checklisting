@@ -238,11 +238,27 @@ class HTMLParser(object):
         Returns:
             dict: a dictionary containing the fields and values of a checklist.
         """
-        keys = node.select('//dl/dt/text()').extract()
-        keys = remove_whitespace(keys)
-        values = node.select('//dl/dd/text()').extract()
-        values = remove_whitespace(values)
-        return dict(zip(keys, values))
+        attr = {}
+        for idx, item in enumerate(node.select('//dl/dt/text()')):
+            key = item.extract().strip()
+            if key == 'Observers:':
+                names = []
+                values = node.select('//dl/dd')[idx].select('text()').extract()
+                for value in values:
+                    name = value.replace(',', '').strip()
+                    if name:
+                        names.append(name)
+                values = node.select('//dl/dd')[idx]\
+                    .select('strong/text()').extract()
+                for value in values:
+                    name = value.replace(',', '').strip()
+                    if name:
+                        names.append(name)
+                attr[key] = ','.join(names)
+            else:
+                value = node.select('//dl/dd')[idx].select('text()').extract()
+                attr[key] = value[0].strip()
+        return attr
 
     def get_checklist(self):
         """Get the checklist fields extracted ffrom the HTML response.

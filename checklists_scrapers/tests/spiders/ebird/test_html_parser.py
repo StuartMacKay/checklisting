@@ -45,13 +45,36 @@ class ParseHTMLChecklistTestCase(TestCase):
                                 <dd>2.0 kilometer(s)</dd>
                             </dl>
                             <dl class="def-list">
-                                <dt>Observers:</dt>
-                                <dd>
-
-                                    Stuart MacKay
-
+                                  <dt>Observers:</dt>
+                                  <dd>
+                                   
+                                       
+                                    Observer One
+                                     <a href="checklist?subID=S1" class="btn-minor">List</a>
+                                    , 
+                                
+                                       
+                                    Observer Two
+                                     <a href="checklist?subID=S2" class="btn-minor">List</a>
+                                    , 
+                                
+                                       
+                                    <strong>Observer Three</strong>
+                                    
+                                    , 
+                                
+                                       
+                                    Observer Four
+                                     <a href="checklist?subID=S4" class="btn-minor">List</a>
+                                    , 
+                                
+                                       
+                                    Observer Five
+                                     <a href="checklist?subID=S5" class="btn-minor">List</a>
+                                    
+                                  
                                 </dd>
-                            </dl>
+                            </dl>                            
                             <dl class="def-list">
                                 <dt>Comments:</dt>
                                 <dd>
@@ -77,7 +100,8 @@ class ParseHTMLChecklistTestCase(TestCase):
             u'Party Size:': u'1',
             u'Duration:': u'2 hour(s) 35 minute(s)',
             u'Distance:': u'2.0 kilometer(s)',
-            u'Observers:': u'Stuart MacKay',
+            u'Observers:': u'Observer One,Observer Two,Observer Four,'
+                           u'Observer Five,Observer Three',
             u'Comments:': u'A comment.',
         }
         actual = self.parser.get_attributes(self.parser.docroot)
@@ -87,7 +111,11 @@ class ParseHTMLChecklistTestCase(TestCase):
         """Verify the observers names can be extracted from the page."""
         expected = {
             'count': 1,
-            'names': ['Stuart MacKay'],
+            'names': [u'Observer One',
+                      u'Observer Two',
+                      u'Observer Four',
+                      u'Observer Five',
+                      u'Observer Three']
         }
         actual = self.parser.get_observers()
         self.assertEqual(expected, actual)
