@@ -120,34 +120,31 @@ class ChecklistParser(object):
         Returns:
             dict: a dictionary containing the checklist fields.
         """
-        xpath = '(//table[@class="PopupTable"])[1]'
-        root = self.docroot.select(xpath)
-        xpath = 'tr/td/label/text()'
-        keys = root.select(xpath).extract()
-
         return {
             'meta': {
                 'version': DOWNLOAD_FORMAT,
                 'language': DOWNLOAD_LANGUAGE,
             },
             'identifier': self.country.upper() + str(self.identifier),
-            'date': self.get_date(root, keys),
-            'location': self.get_location(root, keys),
+            'date': self.get_date(),
+            'location': self.get_location(),
             'source': self.get_source(),
-            'protocol': self.get_protocol(root, keys),
-            'comment': self.get_comment(root, keys),
-            'activity': self.get_activity(root, keys),
-            'observers': self.get_observers(root, keys),
+            'protocol': self.get_protocol(),
+            'comment': self.get_comment(),
+            'activity': self.get_activity(),
+            'observers': self.get_observers(),
             'entries': self.get_entries()
         }
 
-    def get_date(self, root, keys):
+    def get_date(self):
         """Get the date of the observations.
 
         Returns:
             unicode: a date in the form yyyy-mm-dd.
         """
         try:
+            root = self.docroot.select('(//table[@class="PopupTable"])[1]')
+            keys = root.select('tr/td/label/text()').extract()
             idx = keys.index('Start date')
             row = root.select('tr')[idx]
             value = row.select('td')[1].select('text()').extract()[0].strip()
@@ -168,13 +165,15 @@ class ChecklistParser(object):
             'url': self.url,
         }
 
-    def get_comment(self, root, keys):
+    def get_comment(self):
         """Get any comments for the checklist.
 
         Returns:
             unicode: the comment extracted from the checklist.
         """
         try:
+            root = self.docroot.select('(//table[@class="PopupTable"])[1]')
+            keys = root.select('tr/td/label/text()').extract()
             idx = keys.index('Other notes for the visit')
             row = root.select('tr')[idx]
             value = row.select('td')[1].select('text()').extract()[0].strip()
@@ -182,7 +181,7 @@ class ChecklistParser(object):
             value = ''
         return value
 
-    def get_observers(self, root, keys):
+    def get_observers(self):
         """Get the checklist observers.
 
         Returns:
@@ -192,6 +191,8 @@ class ChecklistParser(object):
         gives the number of observers and the second their names.
         """
         try:
+            root = self.docroot.select('(//table[@class="PopupTable"])[1]')
+            keys = root.select('tr/td/label/text()').extract()
             idx = len(keys) - keys[::-1].index('Observers') - 1
             row = root.select('tr')[idx]
             value = row.select('td')[1].select('text()').extract()[0].strip()
@@ -204,13 +205,15 @@ class ChecklistParser(object):
             'count': len(names),
         }
 
-    def get_location(self, root, keys):
+    def get_location(self):
         """Get the location.
 
         Returns:
             dict: a dictionary containing the fields for a location.
         """
         try:
+            root = self.docroot.select('(//table[@class="PopupTable"])[1]')
+            keys = root.select('tr/td/label/text()').extract()
             idx = keys.index('Location')
             row = root.select('tr')[idx]
             name = row.select('td')[1].select('text()').extract()[0].strip()
@@ -220,7 +223,7 @@ class ChecklistParser(object):
             'name': name,
         }
 
-    def get_protocol(self, root, keys):
+    def get_protocol(self):
         """Get the protocol.
 
         Checklists from WorldBirds do not have a specific protocol defined,
@@ -230,6 +233,8 @@ class ChecklistParser(object):
             dict: a dictionary containing the fields for a protocol.
         """
         try:
+            root = self.docroot.select('(//table[@class="PopupTable"])[1]')
+            keys = root.select('tr/td/label/text()').extract()
             idx = keys.index('Time')
             row = root.select('tr')[idx]
             value = row.select('td')[1].select('text()').extract()[0].strip()
@@ -248,13 +253,15 @@ class ChecklistParser(object):
             'duration_minutes': (end_time - start_time) % 60,
         }
 
-    def get_activity(self, root, keys):
+    def get_activity(self):
         """Get the activity.
 
         Returns:
             unicode: the comment extracted from the checklist.
         """
         try:
+            root = self.docroot.select('(//table[@class="PopupTable"])[1]')
+            keys = root.select('tr/td/label/text()').extract()
             idx = keys.index('Purpose')
             row = root.select('tr')[idx]
             value = row.select('td')[1].select('text()').extract()[0].strip()
