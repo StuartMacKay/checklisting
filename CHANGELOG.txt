@@ -1,3 +1,21 @@
+Version 0.2.3
+-------------
+
+  * Added request to WorldBirds parser to select 'English' as the language
+    to display pages in. The account preferences do have a option to select
+    language but this is not apparently used.
+
+  * Fixed the extraction of checklist attributes, location, protocol, etc. to
+    use the labels from the table where the values are displayed rather than
+    relying on fixed row indices since the size of the table changes (more
+    than it used to?).
+
+Version 0.2.2
+-------------
+
+  * Fixed error when parsing lists of observers from the checklists web
+    page on eBird.
+
 Version 0.2.1
 -------------
 

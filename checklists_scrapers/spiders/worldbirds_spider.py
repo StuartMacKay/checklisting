@@ -120,26 +120,39 @@ class ChecklistParser(object):
         Returns:
             dict: a dictionary containing the checklist fields.
         """
-        xpath = '(//table[@class="PopupTable"])[1]/tr/td/text()'
-        rows = self.docroot.select(xpath).extract()
-
-        day, month, year = rows[2].strip().split('-')
-
         return {
             'meta': {
                 'version': DOWNLOAD_FORMAT,
                 'language': DOWNLOAD_LANGUAGE,
             },
             'identifier': self.country.upper() + str(self.identifier),
-            'date': "%s-%s-%s" % (year, month, day),
+            'date': self.get_date(),
             'location': self.get_location(),
             'source': self.get_source(),
             'protocol': self.get_protocol(),
             'comment': self.get_comment(),
-            'activity': rows[6].strip(),
+            'activity': self.get_activity(),
             'observers': self.get_observers(),
             'entries': self.get_entries()
         }
+
+    def get_date(self):
+        """Get the date of the observations.
+
+        Returns:
+            unicode: a date in the form yyyy-mm-dd.
+        """
+        try:
+            root = self.docroot.select('(//table[@class="PopupTable"])[1]')
+            keys = root.select('tr/td/label/text()').extract()
+            idx = keys.index('Start date')
+            row = root.select('tr')[idx]
+            value = row.select('td')[1].select('text()').extract()[0].strip()
+            day, month, year = value.split('-')
+            date = "%s-%s-%s" % (year, month, day)
+        except IndexError:
+            date = ''
+        return date
 
     def get_source(self):
         """Get information about the checklist's source.
@@ -158,19 +171,34 @@ class ChecklistParser(object):
         Returns:
             unicode: the comment extracted from the checklist.
         """
-        xpath = '(//table[@class="PopupTable"])[1]/tr/td/text()'
-        rows = self.docroot.select(xpath).extract()
-        return rows[-3].strip()
+        try:
+            root = self.docroot.select('(//table[@class="PopupTable"])[1]')
+            keys = root.select('tr/td/label/text()').extract()
+            idx = keys.index('Other notes for the visit')
+            row = root.select('tr')[idx]
+            value = row.select('td')[1].select('text()').extract()[0].strip()
+        except IndexError:
+            value = ''
+        return value
 
     def get_observers(self):
         """Get the checklist observers.
 
         Returns:
             dict: a dictionary containing the names of the observers.
+
+        There are two rows in the table with the label 'Observers'. The first
+        gives the number of observers and the second their names.
         """
-        xpath = '(//table[@class="PopupTable"])[1]/tr/td/text()'
-        rows = self.docroot.select(xpath).extract()
-        names = [name.strip() for name in rows[-2].split(',')]
+        try:
+            root = self.docroot.select('(//table[@class="PopupTable"])[1]')
+            keys = root.select('tr/td/label/text()').extract()
+            idx = len(keys) - keys[::-1].index('Observers') - 1
+            row = root.select('tr')[idx]
+            value = row.select('td')[1].select('text()').extract()[0].strip()
+            names = [name.strip() for name in value.split(',')]
+        except IndexError:
+            names = []
 
         return {
             'names': names,
@@ -183,10 +211,16 @@ class ChecklistParser(object):
         Returns:
             dict: a dictionary containing the fields for a location.
         """
-        xpath = '(//table[@class="PopupTable"])[1]/tr/td/text()'
-        rows = self.docroot.select(xpath).extract()
+        try:
+            root = self.docroot.select('(//table[@class="PopupTable"])[1]')
+            keys = root.select('tr/td/label/text()').extract()
+            idx = keys.index('Location')
+            row = root.select('tr')[idx]
+            name = row.select('td')[1].select('text()').extract()[0].strip()
+        except IndexError:
+            name = ''
         return {
-            'name': rows[0].strip(),
+            'name': name,
         }
 
     def get_protocol(self):
@@ -198,11 +232,18 @@ class ChecklistParser(object):
         Returns:
             dict: a dictionary containing the fields for a protocol.
         """
-        xpath = '(//table[@class="PopupTable"])[1]/tr/td/text()'
-        rows = self.docroot.select(xpath).extract()
-        start_hour, start_minute = rows[3].split('-')[0].strip().split(':')
+        try:
+            root = self.docroot.select('(//table[@class="PopupTable"])[1]')
+            keys = root.select('tr/td/label/text()').extract()
+            idx = keys.index('Time')
+            row = root.select('tr')[idx]
+            value = row.select('td')[1].select('text()').extract()[0].strip()
+        except IndexError:
+            value = '00:00 - 00:00'
+
+        start_hour, start_minute = value.split('-')[0].strip().split(':')
         start_time = int(start_hour) * 60 + int(start_minute)
-        end_hour, end_minute = rows[3].split('-')[1].strip().split(':')
+        end_hour, end_minute = value.split('-')[1].strip().split(':')
         end_time = int(end_hour) * 60 + int(end_minute)
 
         return {
@@ -211,6 +252,22 @@ class ChecklistParser(object):
             'duration_hours': (end_time - start_time) / 60,
             'duration_minutes': (end_time - start_time) % 60,
         }
+
+    def get_activity(self):
+        """Get the activity.
+
+        Returns:
+            unicode: the comment extracted from the checklist.
+        """
+        try:
+            root = self.docroot.select('(//table[@class="PopupTable"])[1]')
+            keys = root.select('tr/td/label/text()').extract()
+            idx = keys.index('Purpose')
+            row = root.select('tr')[idx]
+            value = row.select('td')[1].select('text()').extract()[0].strip()
+        except IndexError:
+            value = ''
+        return value
 
     def get_entries(self):
         """Get the list of entries containing the counts for each species.
@@ -312,8 +369,8 @@ class LocationParser(object):
         location['identifier'] = self.country.upper() + str(self.identifier)
         location['country'] = rows[1].strip()
         location['comment_en'] = rows[5].strip()
-        location['lat'] = float(rows[2].split(',')[0].strip())
-        location['lon'] = float(rows[2].split(',')[1].strip())
+        location['lat'] = round(float(rows[2].split(',')[0].strip()), 4)
+        location['lon'] = round(float(rows[2].split(',')[1].strip()), 4)
         return self.checklist
 
 
@@ -454,7 +511,24 @@ class WorldBirdsSpider(BaseSpider):
             os.makedirs(self.directory)
         self.log("Writing checklists to %s" % self.directory, log.INFO)
 
-        return [Request(url=self.start_url, callback=self.login)]
+        return [Request(url=self.start_url, callback=self.select_language)]
+
+    def select_language(self, response):
+        """Select the language.
+
+        Args:
+            response (Response): the login (home) page for the application.
+
+        Returns:
+            Request: POST the filled out login form.
+        """
+        return [FormRequest.from_response(
+            response,
+            formname='Language',
+            formdata={
+                'cboLanguageID': '1'},
+            callback=self.login
+        )]
 
     def login(self, response):
         """Log in to the application.
