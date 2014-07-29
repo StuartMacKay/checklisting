@@ -32,6 +32,12 @@ for Africa where countries are grouped into regions, e.g. East Africa and those
 for Iberia which are hosted at birdlaa5.memset.net/. The country code makes it
 easier to specify which database to use.
 
+IMPORTANT: The preferences for the account allow the species names to be
+displayed as either "Birdlife common name" (the default), "National common name"
+or "Scientific name". Make sure the default value is selected so that the
+species name match closely the species names used in other databases, e.g.
+eBird,
+
 Supported Databases
 ===================
 
